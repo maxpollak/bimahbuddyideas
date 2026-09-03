@@ -100,6 +100,11 @@
       background-image: repeating-linear-gradient(0deg, rgba(0,0,0,0.18) 0px, rgba(0,0,0,0.18) 2px, transparent 2px, transparent 28px),
                         radial-gradient(ellipse at center, rgba(80, 45, 25, 0.55) 0%, rgba(15, 8, 4, 0.95) 100%);
     }
+
+    /* Catcher sky gradient */
+    .catcher-sky-bg {
+      background: linear-gradient(180deg, #091e3a 0%, #153b6c 45%, #2a689a 80%, #1a483a 100%);
+    }
   </style>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-center items-center p-3 sm:p-6 selection:bg-amber-500 selection:text-white">
@@ -111,21 +116,26 @@
   <!-- VIEW 1: HOME PAGE (Clean Square Buttons)   -->
   <!-- ========================================== -->
   <div id="homeView" class="w-full flex-1 flex items-center justify-center min-h-[85vh] p-4">
-    <div class="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-6 sm:gap-8 max-w-4xl">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 max-w-5xl justify-items-center">
       
       <!-- Button 1: Alef-Bet Match -->
-      <button onclick="goToMatchGame(1)" class="w-48 h-48 sm:w-56 sm:h-56 aspect-square rounded-3xl bg-slate-900 border-2 border-slate-800 hover:border-amber-500/70 hover:bg-slate-850 text-white font-bold text-xl sm:text-2xl flex items-center justify-center text-center p-6 shadow-2xl hover:shadow-amber-500/20 transition-all duration-300 transform hover:-translate-y-1 active:scale-95">
+      <button onclick="goToMatchGame(1)" class="w-44 h-44 sm:w-52 sm:h-52 aspect-square rounded-3xl bg-slate-900 border-2 border-slate-800 hover:border-amber-500/70 hover:bg-slate-850 text-white font-bold text-lg sm:text-xl flex items-center justify-center text-center p-6 shadow-2xl hover:shadow-amber-500/20 transition-all duration-300 transform hover:-translate-y-1 active:scale-95">
         Alef-Bet Match
       </button>
 
       <!-- Button 2: Alef-Bet Runner (Subway Surfers style) -->
-      <button onclick="goToRunnerGame()" class="w-48 h-48 sm:w-56 sm:h-56 aspect-square rounded-3xl bg-slate-900 border-2 border-slate-800 hover:border-amber-500/70 hover:bg-slate-850 text-white font-bold text-xl sm:text-2xl flex items-center justify-center text-center p-6 shadow-2xl hover:shadow-amber-500/20 transition-all duration-300 transform hover:-translate-y-1 active:scale-95">
+      <button onclick="goToRunnerGame()" class="w-44 h-44 sm:w-52 sm:h-52 aspect-square rounded-3xl bg-slate-900 border-2 border-slate-800 hover:border-amber-500/70 hover:bg-slate-850 text-white font-bold text-lg sm:text-xl flex items-center justify-center text-center p-6 shadow-2xl hover:shadow-amber-500/20 transition-all duration-300 transform hover:-translate-y-1 active:scale-95">
         Alef-Bet Runner
       </button>
 
       <!-- Button 3: Alef-Bet Slicer (Fruit Ninja style) -->
-      <button onclick="goToSlicerGame()" class="w-48 h-48 sm:w-56 sm:h-56 aspect-square rounded-3xl bg-slate-900 border-2 border-slate-800 hover:border-rose-500/70 hover:bg-slate-850 text-white font-bold text-xl sm:text-2xl flex items-center justify-center text-center p-6 shadow-2xl hover:shadow-rose-500/20 transition-all duration-300 transform hover:-translate-y-1 active:scale-95">
+      <button onclick="goToSlicerGame()" class="w-44 h-44 sm:w-52 sm:h-52 aspect-square rounded-3xl bg-slate-900 border-2 border-slate-800 hover:border-rose-500/70 hover:bg-slate-850 text-white font-bold text-lg sm:text-xl flex items-center justify-center text-center p-6 shadow-2xl hover:shadow-rose-500/20 transition-all duration-300 transform hover:-translate-y-1 active:scale-95">
         Alef-Bet Slicer
+      </button>
+
+      <!-- Button 4: Alef-Bet Catcher (Bucket Stacking Game) -->
+      <button onclick="goToCatcherGame()" class="w-44 h-44 sm:w-52 sm:h-52 aspect-square rounded-3xl bg-slate-900 border-2 border-slate-800 hover:border-emerald-500/70 hover:bg-slate-850 text-white font-bold text-lg sm:text-xl flex items-center justify-center text-center p-6 shadow-2xl hover:shadow-emerald-500/20 transition-all duration-300 transform hover:-translate-y-1 active:scale-95">
+        Alef-Bet Catcher
       </button>
 
     </div>
@@ -140,7 +150,6 @@
     <!-- Top Game Header -->
     <header class="w-full flex flex-col sm:flex-row items-center justify-between gap-4 py-2 border-b border-slate-800/80">
       <div class="flex items-center gap-3">
-        <!-- Back to Home Button -->
         <button onclick="goToHome()" class="px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 hover:bg-slate-800 hover:border-slate-700 text-slate-300 hover:text-white text-xs font-semibold flex items-center gap-1.5 transition" title="Back to Home">
           <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -223,7 +232,6 @@
       </div>
     </main>
 
-    <!-- Bottom Info Footer -->
     <footer class="w-full text-center py-3 text-xs text-slate-500 border-t border-slate-900 mt-2">
       Tap a card to flip it over, then find its corresponding letter or name. Matching pairs disappear!
     </footer>
@@ -268,34 +276,26 @@
       </div>
     </header>
 
-    <!-- Runner Canvas Arena Container -->
     <div id="runnerContainer" class="relative w-full aspect-[9/14] sm:aspect-[4/5] max-h-[72vh] my-2 bg-slate-950 border border-slate-800 rounded-3xl overflow-hidden shadow-2xl flex items-center justify-center">
-      
-      <!-- 3D Runner Canvas -->
       <canvas id="runnerCanvas" class="w-full h-full block"></canvas>
 
-      <!-- Live HUD Overlay -->
       <div class="absolute top-3 left-3 right-3 flex items-start justify-between pointer-events-none z-10">
-        <!-- Coins -->
         <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900/85 backdrop-blur border border-slate-700 shadow-md">
           <span class="text-amber-400 text-base">🪙</span>
           <span id="runnerCoinsHud" class="font-extrabold text-sm sm:text-base text-amber-300 font-mono">0</span>
         </div>
 
-        <!-- Speed Gauge Indicator -->
         <div class="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-slate-900/85 backdrop-blur border border-slate-700 shadow-md">
           <span class="text-[11px] uppercase font-semibold text-amber-400">⚡ Speed:</span>
           <span id="runnerSpeedHud" class="font-extrabold text-xs sm:text-sm text-white font-mono">1.0x</span>
         </div>
 
-        <!-- Score -->
         <div class="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-slate-900/85 backdrop-blur border border-slate-700 shadow-md">
           <span class="text-[11px] uppercase font-semibold text-slate-400">Score:</span>
           <span id="runnerScoreHud" class="font-extrabold text-sm sm:text-base text-white font-mono">0</span>
         </div>
       </div>
 
-      <!-- Tunnel Approach Alert Banner (Top Center) -->
       <div id="tunnelAlertBanner" class="absolute top-14 left-1/2 -translate-x-1/2 w-[92%] max-w-sm pointer-events-none z-20 hidden transition-all duration-200">
         <div class="tunnel-alert-anim bg-slate-900/95 border-2 border-amber-400 rounded-2xl px-4 py-2 shadow-2xl shadow-amber-500/30 text-center backdrop-blur">
           <div class="text-[10px] uppercase tracking-widest text-amber-400 font-extrabold">Tunnel Approach!</div>
@@ -307,7 +307,6 @@
         </div>
       </div>
 
-      <!-- On-Screen Controls for Touch / Mobile -->
       <div class="absolute bottom-3 inset-x-3 flex justify-between items-end pointer-events-none z-20">
         <div class="flex gap-2">
           <button id="touchLeftBtn" class="pointer-events-auto w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-slate-900/80 hover:bg-slate-800 active:bg-amber-500 border border-slate-700 active:text-slate-950 text-white flex items-center justify-center text-xl shadow-lg transition transform active:scale-90 select-none">
@@ -331,10 +330,8 @@
           </button>
         </div>
       </div>
-
     </div>
 
-    <!-- Runner Footer Instructions -->
     <footer class="w-full text-center py-2 text-xs text-slate-500 border-t border-slate-900">
       <kbd class="px-1.5 py-0.5 bg-slate-900 rounded border border-slate-800 text-slate-300 font-mono">↑ / Space</kbd> Jump over roadblocks &bull; 
       <kbd class="px-1.5 py-0.5 bg-slate-900 rounded border border-slate-800 text-slate-300 font-mono">↓ / S</kbd> Roll under overhead gantries &bull; 
@@ -349,7 +346,6 @@
   <!-- ========================================== -->
   <div id="slicerView" class="w-full max-w-3xl mx-auto flex-1 flex flex-col items-center justify-between hidden">
 
-    <!-- Slicer Header -->
     <header class="w-full flex items-center justify-between gap-3 py-2 border-b border-slate-800/80">
       <div class="flex items-center gap-3">
         <button onclick="goToHome()" class="px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 hover:bg-slate-800 hover:border-slate-700 text-slate-300 hover:text-white text-xs font-semibold flex items-center gap-1.5 transition" title="Back to Home">
@@ -381,28 +377,21 @@
       </div>
     </header>
 
-    <!-- Slicer Canvas Arena Container -->
     <div id="slicerContainer" class="relative w-full aspect-[9/14] sm:aspect-[4/5] max-h-[72vh] my-2 dojo-wood-pattern border-2 border-amber-900/60 rounded-3xl overflow-hidden shadow-2xl flex items-center justify-center cursor-crosshair">
-      
-      <!-- Huge Target Background Watermark (Rendered large in the center of the board) -->
       <div id="slicerBgTarget" class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none select-none z-0 opacity-25 transition-all duration-300">
         <span class="text-xs sm:text-sm font-black uppercase tracking-[0.35em] text-amber-300/80 mb-1">TARGET TO SLICE</span>
         <span id="slicerBgName" class="text-5xl sm:text-7xl md:text-8xl font-black uppercase text-amber-400 tracking-tight drop-shadow-xl font-outfit leading-none">ALEF</span>
         <span id="slicerBgHebrew" class="text-7xl sm:text-9xl font-bold text-white/30 font-hebrew mt-1 sm:mt-2 leading-none">א</span>
       </div>
 
-      <!-- Slicer Canvas -->
       <canvas id="slicerCanvas" class="w-full h-full block touch-none relative z-10"></canvas>
 
-      <!-- Live HUD: Speed, Score, Lives -->
       <div class="absolute top-3 left-3 right-3 flex items-center justify-between pointer-events-none z-20">
-        <!-- Target Mission Badge -->
         <div id="slicerTargetBox" class="flex items-center gap-2 px-3.5 py-1.5 rounded-2xl bg-black/80 backdrop-blur border border-amber-500/60 shadow-xl transition-all duration-300">
           <span class="text-xs uppercase tracking-widest text-amber-400 font-extrabold">Slice:</span>
           <span id="slicerTargetPrompt" class="text-base sm:text-lg font-black text-white underline underline-offset-4 tracking-wide font-mono">Alef</span>
         </div>
 
-        <!-- Speed Gauge, Score & Lives -->
         <div class="flex items-center gap-2 sm:gap-3">
           <div class="flex items-center gap-1 px-2.5 py-1.5 rounded-2xl bg-black/75 backdrop-blur border border-slate-700 shadow-md">
             <span class="text-[11px] text-amber-400 font-semibold">⚡</span>
@@ -412,7 +401,6 @@
             <span class="text-xs text-slate-400 font-semibold uppercase">Score:</span>
             <span id="slicerScoreHud" class="text-base font-extrabold text-amber-300 font-mono">0</span>
           </div>
-          <!-- Lives Display (3 Strikes) -->
           <div id="slicerLivesHud" class="flex gap-1 bg-black/75 px-2.5 py-1.5 rounded-2xl border border-slate-700 text-sm">
             <span class="text-rose-500">❌</span>
             <span class="text-rose-500">❌</span>
@@ -420,12 +408,100 @@
           </div>
         </div>
       </div>
+    </div>
+
+    <footer class="w-full text-center py-2 text-xs text-slate-500 border-t border-slate-900">
+      Glide mouse cursor or swipe your finger to slice! Slice the target letter for points. Don't worry if you miss one—just avoid bombs and wrong letters!
+    </footer>
+
+  </div>
+
+
+  <!-- ========================================== -->
+  <!-- VIEW 5: ALEF-BET CATCHER (Stacking Game)   -->
+  <!-- ========================================== -->
+  <div id="catcherView" class="w-full max-w-3xl mx-auto flex-1 flex flex-col items-center justify-between hidden">
+
+    <!-- Catcher Header -->
+    <header class="w-full flex items-center justify-between gap-3 py-2 border-b border-slate-800/80">
+      <div class="flex items-center gap-3">
+        <button onclick="goToHome()" class="px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 hover:bg-slate-800 hover:border-slate-700 text-slate-300 hover:text-white text-xs font-semibold flex items-center gap-1.5 transition" title="Back to Home">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+          <span>Home</span>
+        </button>
+        <div>
+          <h1 class="text-base sm:text-lg font-bold text-white tracking-tight">Alef-Bet Catcher</h1>
+          <p class="text-[11px] text-slate-400">Catch the falling letters in alphabetical order &amp; stack them high!</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <button onclick="toggleAudio()" class="audioBtn p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-amber-400 hover:bg-slate-800 transition" title="Toggle Sound">
+          <svg class="soundIconOn w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+          </svg>
+          <svg class="soundIconOff w-5 h-5 hidden text-slate-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
+          </svg>
+        </button>
+
+        <button onclick="startCatcherGame()" class="px-3 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 shadow transition transform active:scale-95">
+          <span>Restart</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Catcher Canvas Container -->
+    <div id="catcherContainer" class="relative w-full aspect-[9/14] sm:aspect-[4/5] max-h-[72vh] my-2 catcher-sky-bg border-2 border-slate-700/80 rounded-3xl overflow-hidden shadow-2xl flex items-center justify-center cursor-ew-resize">
+      
+      <canvas id="catcherCanvas" class="w-full h-full block touch-none relative z-10"></canvas>
+
+      <!-- Live HUD: Alphabet Order Challenge, Height Meter, Score, Strikes -->
+      <div class="absolute top-3 left-3 right-3 flex items-center justify-between pointer-events-none z-20">
+        <!-- Challenge Badge -->
+        <div id="catcherTargetBox" class="flex items-center gap-2 px-3.5 py-1.5 rounded-2xl bg-black/80 backdrop-blur border border-emerald-500/60 shadow-xl transition-all duration-300">
+          <span class="text-xs uppercase tracking-widest text-emerald-400 font-extrabold">Challenge:</span>
+          <span id="catcherTargetPrompt" class="text-xs sm:text-sm font-bold text-white tracking-wide font-mono">Catch In Order (#1)</span>
+        </div>
+
+        <div class="flex items-center gap-2 sm:gap-3">
+          <!-- Stack Height Gauge -->
+          <div class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-2xl bg-black/75 backdrop-blur border border-slate-700 shadow-md">
+            <span class="text-xs text-amber-400 font-bold">🪜 Stack:</span>
+            <span id="catcherStackHud" class="text-xs font-mono font-extrabold text-white">0</span>
+            <span class="text-[10px] text-slate-400">/22</span>
+          </div>
+
+          <!-- Score -->
+          <div class="flex items-center gap-1 px-3 py-1.5 rounded-2xl bg-black/75 backdrop-blur border border-slate-700 shadow-md">
+            <span class="text-xs text-slate-400 font-semibold uppercase">Score:</span>
+            <span id="catcherScoreHud" class="text-base font-extrabold text-amber-300 font-mono">0</span>
+          </div>
+
+          <!-- Lives -->
+          <div id="catcherLivesHud" class="flex gap-1 bg-black/75 px-2.5 py-1.5 rounded-2xl border border-slate-700 text-sm">
+            <span class="text-rose-500">❌</span>
+            <span class="text-rose-500">❌</span>
+            <span class="text-rose-500">❌</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick control hint for touch/mobile -->
+      <div class="absolute bottom-2 inset-x-0 text-center pointer-events-none z-20">
+        <span class="text-[10px] text-white/50 bg-black/40 px-3 py-1 rounded-full backdrop-blur">
+          Move basket with Mouse, Touch/Drag, or ← → Arrow Keys
+        </span>
+      </div>
 
     </div>
 
-    <!-- Slicer Footer Instructions -->
+    <!-- Catcher Footer Instructions -->
     <footer class="w-full text-center py-2 text-xs text-slate-500 border-t border-slate-900">
-      Glide mouse cursor or swipe your finger to slice! Slice the target letter for points. Don't worry if you miss one—just avoid bombs and wrong letters!
+      Catch the Hebrew letters in alphabetical order! Each correct letter stacks higher, leaving less time to react!
     </footer>
 
   </div>
@@ -532,6 +608,38 @@
           Slice Again
         </button>
         <button onclick="closeSlicerGameOver(); goToHome();" class="flex-1 py-3 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-sm font-semibold transition border border-slate-700">
+          Home Menu
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Catcher Game Over / Victory Modal -->
+  <div id="catcherGameOverModal" class="fixed inset-0 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 z-50 hidden opacity-0 transition-opacity duration-300">
+    <div class="bg-gradient-to-b from-slate-900 to-slate-950 border border-emerald-500/40 rounded-3xl p-6 sm:p-8 max-w-md w-full text-center shadow-2xl shadow-emerald-500/10 transform scale-95 transition-transform duration-300">
+      <div id="catcherModalIcon" class="w-16 h-16 mx-auto rounded-full bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center mb-4">
+        <span class="text-3xl">🧺</span>
+      </div>
+
+      <h2 id="catcherModalTitle" class="text-2xl font-bold text-white mb-1">Stack Complete!</h2>
+      <p id="catcherModalReason" class="text-xs sm:text-sm text-slate-300 mb-6">You caught all letters!</p>
+
+      <div class="grid grid-cols-2 gap-3 mb-6 bg-slate-950/70 p-4 rounded-2xl border border-slate-800 text-center">
+        <div>
+          <p class="text-[10px] text-slate-400 uppercase font-semibold">Letters Stacked</p>
+          <p id="catcherFinalStack" class="text-xl font-bold text-emerald-400 mt-0.5">0 / 22</p>
+        </div>
+        <div>
+          <p class="text-[10px] text-slate-400 uppercase font-semibold">Final Score</p>
+          <p id="catcherFinalScore" class="text-xl font-bold text-white mt-0.5">0</p>
+        </div>
+      </div>
+
+      <div class="flex flex-col sm:flex-row gap-3">
+        <button onclick="closeCatcherGameOver(); startCatcherGame();" class="flex-1 py-3 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm shadow-lg shadow-emerald-500/20 transition">
+          Play Again
+        </button>
+        <button onclick="closeCatcherGameOver(); goToHome();" class="flex-1 py-3 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-sm font-semibold transition border border-slate-700">
           Home Menu
         </button>
       </div>
@@ -679,6 +787,14 @@
     }
     function soundBeep() { playTone(720, 'sine', 0.05, 0.06); }
 
+    function soundCatchSuccess(stackIndex = 0) {
+      if (!audioEnabled) return;
+      const baseFreq = 440;
+      const noteFreq = baseFreq * Math.pow(1.05946, Math.min(24, stackIndex));
+      playTone(noteFreq, 'triangle', 0.16, 0.12);
+      setTimeout(() => playTone(noteFreq * 1.25, 'sine', 0.12, 0.08), 50);
+    }
+
     function soundSwoosh() {
       if (!audioEnabled) return;
       try {
@@ -739,14 +855,17 @@
       stopMatchTimer();
       stopRunnerGame();
       stopSlicerGame();
+      stopCatcherGame();
       closeVictoryModal();
       closeRunnerGameOver();
       closeSlicerGameOver();
+      closeCatcherGameOver();
       toggleReferenceModal(false);
 
       document.getElementById('gameView').classList.add('hidden');
       document.getElementById('runnerView').classList.add('hidden');
       document.getElementById('slicerView').classList.add('hidden');
+      document.getElementById('catcherView').classList.add('hidden');
       document.getElementById('homeView').classList.remove('hidden');
     }
 
@@ -754,6 +873,7 @@
       document.getElementById('homeView').classList.add('hidden');
       document.getElementById('runnerView').classList.add('hidden');
       document.getElementById('slicerView').classList.add('hidden');
+      document.getElementById('catcherView').classList.add('hidden');
       document.getElementById('gameView').classList.remove('hidden');
       switchMatchPage(part);
     }
@@ -762,6 +882,7 @@
       document.getElementById('homeView').classList.add('hidden');
       document.getElementById('gameView').classList.add('hidden');
       document.getElementById('slicerView').classList.add('hidden');
+      document.getElementById('catcherView').classList.add('hidden');
       document.getElementById('runnerView').classList.remove('hidden');
       startRunnerGame();
     }
@@ -770,8 +891,18 @@
       document.getElementById('homeView').classList.add('hidden');
       document.getElementById('gameView').classList.add('hidden');
       document.getElementById('runnerView').classList.add('hidden');
+      document.getElementById('catcherView').classList.add('hidden');
       document.getElementById('slicerView').classList.remove('hidden');
       startSlicerGame();
+    }
+
+    function goToCatcherGame() {
+      document.getElementById('homeView').classList.add('hidden');
+      document.getElementById('gameView').classList.add('hidden');
+      document.getElementById('runnerView').classList.add('hidden');
+      document.getElementById('slicerView').classList.add('hidden');
+      document.getElementById('catcherView').classList.remove('hidden');
+      startCatcherGame();
     }
 
     function goToHomeFromModal() {
@@ -780,7 +911,7 @@
     }
 
     // =================================================================
-    // 4. ALEPH-BET MATCHING GAME LOGIC
+    // 4. ALEPH-BET MATCHING GAME LOGIC (PRESERVED)
     // =================================================================
     let currentMatchPage = 1;
     let cardDeck = [];
@@ -1099,7 +1230,7 @@
     }
 
     // =================================================================
-    // 5. SUBWAY SURFERS RUNNER GAME LOGIC
+    // 5. SUBWAY SURFERS RUNNER GAME LOGIC (PRESERVED)
     // =================================================================
     const runnerCanvas = document.getElementById('runnerCanvas');
     const runnerCtx = runnerCanvas.getContext('2d');
@@ -1272,7 +1403,6 @@
 
       const correctLaneIndex = options.findIndex(o => o.id === target.id);
       const correctLaneVal = correctLaneIndex - 1;
-
       const approachDistance = 1450;
 
       activeTunnel = {
@@ -2098,7 +2228,7 @@
     });
 
     // =================================================================
-    // 6. ALEF-BET SLICER GAME LOGIC (RELAXED PACE & BACKGROUND WATERMARK)
+    // 6. ALEF-BET SLICER GAME LOGIC (FRUIT NINJA STYLE)
     // =================================================================
     const slicerCanvas = document.getElementById('slicerCanvas');
     const slicerCtx = slicerCanvas.getContext('2d');
@@ -2129,7 +2259,6 @@
     }
     window.addEventListener('resize', resizeSlicerCanvas);
 
-    // Pick a new letter goal and trigger a background pulse
     function pickNewSlicerTarget(announce = true) {
       const previousId = currentTargetLetter ? currentTargetLetter.id : '';
       let nextTarget = ALL_LETTERS[Math.floor(Math.random() * ALL_LETTERS.length)];
@@ -2216,16 +2345,11 @@
       cancelAnimationFrame(slicerAnimId);
     }
 
-    // Toss fruit wave with relaxed initial float & progressive acceleration
     function tossFruitWave() {
       const w = slicerCanvas.width;
       const h = slicerCanvas.height;
 
-      // PROGRESSIVE SPEED FORMULA:
-      // Starts gentle and floaty, then smoothly increases as letters are sliced
       const progressFactor = Math.min(2.0, slicerSlicedCount * 0.04);
-      
-      // Softer gravity (starts at 0.24 vs 0.38) for genuine hang-time
       const currentGravity = 0.24 * (1 + progressFactor * 0.65);
       const count = 1 + Math.floor(Math.random() * (progressFactor > 0.4 ? 3 : 2));
       const waveHasTarget = Math.random() > 0.28;
@@ -2278,7 +2402,6 @@
       const w = slicerCanvas.width;
       const h = slicerCanvas.height;
 
-      // Speed progress indicator
       const progressFactor = Math.min(2.0, slicerSlicedCount * 0.04);
       const currentSpeedDisplay = (1 + progressFactor * 0.5).toFixed(1) + 'x';
       const speedHud = document.getElementById('slicerSpeedHud');
@@ -2288,7 +2411,6 @@
         targetGracePeriod -= dt;
       }
 
-      // Starts with a relaxed 3.2s interval and smoothly tightens down as you succeed
       spawnTimer += dt;
       const currentWaveInterval = Math.max(1.3, 3.2 - progressFactor * 1.0);
       if (spawnTimer > currentWaveInterval) {
@@ -2296,7 +2418,6 @@
         spawnTimer = Math.random() * 0.3;
       }
 
-      // Rotate letter goal automatically after 14 seconds if unsliced
       targetChangeTimer += dt;
       if (targetChangeTimer > 14) {
         pickNewSlicerTarget(true);
@@ -2309,7 +2430,6 @@
         item.vy += item.gravity * (dt * 60);
         item.rotation += item.rotSpeed * (dt * 60);
 
-        // Falling off bottom unsliced does NOT take a life!
         if (item.y > h + 70) {
           airborneItems.splice(i, 1);
         }
@@ -2457,7 +2577,6 @@
           life: 1.8
         });
 
-        // Rotate to the next letter target
         setTimeout(() => {
           if (slicerActive) {
             pickNewSlicerTarget(true);
@@ -2637,7 +2756,495 @@
     }, { passive: false });
 
     // =================================================================
-    // 7. CONFETTI ENGINE (FOR MATCH VICTORY)
+    // 7. ALEF-BET CATCHER GAME LOGIC (RESPONSIVE THIN STACKING & CLEAR SCREEN)
+    // =================================================================
+    const catcherCanvas = document.getElementById('catcherCanvas');
+    const catcherCtx = catcherCanvas.getContext('2d');
+    let catcherAnimId = null;
+    let catcherActive = false;
+
+    let catcherScore = 0;
+    let catcherStrikes = 0;
+    const MAX_CATCHER_STRIKES = 3;
+    let currentAlphabetIndex = 0; // Starts from 0 (Alef) to 21 (Tav)
+    
+    // Basket player position & motion
+    let basketX = 0;
+    let targetBasketX = 0;
+    const BASKET_WIDTH = 84;
+    const BASKET_HEIGHT = 24;
+
+    // Dynamically computed block thickness:
+    // Ensures all 22 letters take up max 50-55% of screen height so upper 45% is always reaction space!
+    function getStackItemHeight() {
+      const h = catcherCanvas.height || 500;
+      // Cap item height so 22 items * height <= h * 0.48
+      const maxTotalStackH = h * 0.48;
+      const computed = Math.floor(maxTotalStackH / 22);
+      return Math.max(9, Math.min(14, computed));
+    }
+
+    // Array of correctly caught letters forming the tower: [{ hebrew, name, color }, ...]
+    let stackedLetters = [];
+
+    // Falling items: letters & rocks
+    let fallingDrops = [];
+    let catcherParticles = [];
+    let dropSpawnTimer = 0;
+    let catcherLastTime = 0;
+    let basketWobble = 0;
+
+    function resizeCatcherCanvas() {
+      const container = document.getElementById('catcherContainer');
+      if (!container) return;
+      const rect = container.getBoundingClientRect();
+      catcherCanvas.width = rect.width;
+      catcherCanvas.height = rect.height;
+      if (basketX === 0) {
+        basketX = catcherCanvas.width / 2;
+        targetBasketX = basketX;
+      }
+    }
+    window.addEventListener('resize', resizeCatcherCanvas);
+
+    function updateCatcherLivesDisplay() {
+      const livesContainer = document.getElementById('catcherLivesHud');
+      livesContainer.innerHTML = '';
+      for (let i = 0; i < MAX_CATCHER_STRIKES; i++) {
+        const strikeSpan = document.createElement('span');
+        if (i < catcherStrikes) {
+          strikeSpan.className = 'text-rose-500 font-bold';
+          strikeSpan.textContent = '❌';
+        } else {
+          strikeSpan.className = 'text-slate-600';
+          strikeSpan.textContent = '⚪';
+        }
+        livesContainer.appendChild(strikeSpan);
+      }
+    }
+
+    function updateCatcherTargetHud() {
+      const promptEl = document.getElementById('catcherTargetPrompt');
+      const boxEl = document.getElementById('catcherTargetBox');
+      const stackHud = document.getElementById('catcherStackHud');
+
+      if (currentAlphabetIndex < ALL_LETTERS.length) {
+        if (promptEl) promptEl.textContent = `Catch in Order (#${currentAlphabetIndex + 1})`;
+        if (stackHud) stackHud.textContent = stackedLetters.length;
+        if (boxEl) {
+          boxEl.classList.add('scale-105', 'border-emerald-300');
+          setTimeout(() => {
+            boxEl.classList.remove('scale-105', 'border-emerald-300');
+          }, 300);
+        }
+      }
+    }
+
+    function startCatcherGame() {
+      resizeCatcherCanvas();
+      catcherActive = true;
+      catcherScore = 0;
+      catcherStrikes = 0;
+      currentAlphabetIndex = 0;
+      stackedLetters = [];
+      fallingDrops = [];
+      catcherParticles = [];
+      dropSpawnTimer = 0;
+      basketWobble = 0;
+
+      basketX = catcherCanvas.width / 2;
+      targetBasketX = basketX;
+
+      document.getElementById('catcherScoreHud').textContent = '0';
+      updateCatcherLivesDisplay();
+      updateCatcherTargetHud();
+      closeCatcherGameOver();
+
+      catcherLastTime = performance.now();
+      cancelAnimationFrame(catcherAnimId);
+      catcherAnimId = requestAnimationFrame(catcherGameLoop);
+    }
+
+    function stopCatcherGame() {
+      catcherActive = false;
+      cancelAnimationFrame(catcherAnimId);
+    }
+
+    function spawnFallingDrop() {
+      const w = catcherCanvas.width;
+      const targetLetter = ALL_LETTERS[currentAlphabetIndex];
+      const isRock = Math.random() < 0.15;
+      
+      let letterData = null;
+      if (!isRock) {
+        if (Math.random() < 0.44) {
+          letterData = targetLetter;
+        } else {
+          const otherLetters = ALL_LETTERS.filter((_, idx) => idx !== currentAlphabetIndex);
+          letterData = otherLetters[Math.floor(Math.random() * otherLetters.length)];
+        }
+      }
+
+      // Fall speed scales moderately so it never becomes an impossible wall
+      const stackRatio = stackedLetters.length / ALL_LETTERS.length;
+      const baseFallSpeed = 145 + stackRatio * 75;
+
+      fallingDrops.push({
+        x: 35 + Math.random() * (w - 70),
+        y: -35,
+        speed: baseFallSpeed + (Math.random() - 0.5) * 20,
+        radius: 24,
+        isRock: isRock,
+        letter: letterData,
+        caught: false
+      });
+    }
+
+    function catcherGameLoop(timestamp) {
+      if (!catcherActive) return;
+      const dt = Math.min((timestamp - catcherLastTime) / 1000, 0.08);
+      catcherLastTime = timestamp;
+
+      updateCatcher(dt);
+      drawCatcher();
+
+      catcherAnimId = requestAnimationFrame(catcherGameLoop);
+    }
+
+    function updateCatcher(dt) {
+      const w = catcherCanvas.width;
+      const h = catcherCanvas.height;
+
+      // Smooth basket movement toward target cursor
+      basketX += (targetBasketX - basketX) * Math.min(1, 18 * dt);
+      basketX = Math.max(BASKET_WIDTH / 2, Math.min(w - BASKET_WIDTH / 2, basketX));
+
+      // Dampen wobble
+      basketWobble *= Math.pow(0.05, dt);
+
+      // Reaction zone: calculate current height of the top of the basket stack with thinner blocks
+      const itemHeight = getStackItemHeight();
+      const towerHeight = stackedLetters.length * itemHeight;
+      const basketFloorY = h - 28;
+      const stackCatchTopY = basketFloorY - BASKET_HEIGHT - towerHeight;
+
+      // Spawning frequency scales moderately
+      dropSpawnTimer += dt;
+      const spawnInterval = Math.max(0.75, 1.4 - (stackedLetters.length / ALL_LETTERS.length) * 0.45);
+      if (dropSpawnTimer > spawnInterval) {
+        spawnFallingDrop();
+        dropSpawnTimer = 0;
+      }
+
+      // Update falling items
+      for (let i = fallingDrops.length - 1; i >= 0; i--) {
+        const drop = fallingDrops[i];
+        drop.y += drop.speed * dt;
+
+        // Catch collision at top of stack with reliable forgiveness box
+        const hitCatchZone = (drop.y + drop.radius >= stackCatchTopY) && (drop.y - drop.radius <= stackCatchTopY + 18);
+        const hitHorizontalZone = Math.abs(drop.x - basketX) < (BASKET_WIDTH / 2 + 10);
+
+        if (hitCatchZone && hitHorizontalZone && !drop.caught) {
+          drop.caught = true;
+          handleCatcherCatch(drop, stackCatchTopY);
+          fallingDrops.splice(i, 1);
+          continue;
+        }
+
+        // Clean items that hit the ground safely without penalty
+        if (drop.y > h + 40) {
+          fallingDrops.splice(i, 1);
+        }
+      }
+
+      // Update sparkle burst particles
+      for (let i = catcherParticles.length - 1; i >= 0; i--) {
+        const p = catcherParticles[i];
+        p.x += p.vx * dt;
+        p.y += p.vy * dt;
+        p.life -= dt;
+        if (p.life <= 0) {
+          catcherParticles.splice(i, 1);
+        }
+      }
+    }
+
+    function handleCatcherCatch(drop, catchY) {
+      if (drop.isRock) {
+        soundCrash();
+        basketWobble = 14;
+        recordCatcherStrike("You caught a falling rock! 🪨");
+        return;
+      }
+
+      const targetLetter = ALL_LETTERS[currentAlphabetIndex];
+
+      if (drop.letter.id === targetLetter.id) {
+        soundCatchSuccess(stackedLetters.length);
+        catcherScore += 150 + stackedLetters.length * 20;
+        document.getElementById('catcherScoreHud').textContent = catcherScore;
+
+        stackedLetters.push({
+          id: drop.letter.id,
+          hebrew: drop.letter.hebrew,
+          name: drop.letter.name,
+          color: drop.letter.color
+        });
+
+        for (let i = 0; i < 14; i++) {
+          catcherParticles.push({
+            x: basketX,
+            y: catchY,
+            vx: (Math.random() - 0.5) * 200,
+            vy: (Math.random() - 0.5) * 180 - 40,
+            color: drop.letter.color,
+            life: 0.4,
+            maxLife: 0.4
+          });
+        }
+
+        currentAlphabetIndex++;
+
+        if (currentAlphabetIndex >= ALL_LETTERS.length) {
+          handleCatcherVictory();
+        } else {
+          updateCatcherTargetHud();
+        }
+
+      } else {
+        soundMismatch();
+        basketWobble = 10;
+        recordCatcherStrike(`Wrong letter caught! That was ${drop.letter.name} (${drop.letter.hebrew})!`);
+      }
+    }
+
+    function recordCatcherStrike(reason) {
+      catcherStrikes++;
+      updateCatcherLivesDisplay();
+      if (catcherStrikes >= MAX_CATCHER_STRIKES) {
+        handleCatcherGameOver(reason);
+      }
+    }
+
+    function handleCatcherVictory() {
+      stopCatcherGame();
+      soundVictory();
+      launchConfetti();
+
+      document.getElementById('catcherModalIcon').innerHTML = `<span class="text-3xl">🏆</span>`;
+      document.getElementById('catcherModalTitle').textContent = "Kol HaKavod! Full Alef-Bet Stacked!";
+      document.getElementById('catcherModalReason').textContent = "You caught all 22 Hebrew letters in perfect alphabetical order!";
+      document.getElementById('catcherFinalStack').textContent = "22 / 22";
+      document.getElementById('catcherFinalScore').textContent = catcherScore;
+
+      const modal = document.getElementById('catcherGameOverModal');
+      modal.classList.remove('hidden');
+      setTimeout(() => {
+        modal.classList.remove('opacity-0');
+        modal.firstElementChild.classList.remove('scale-95');
+      }, 30);
+    }
+
+    function handleCatcherGameOver(reason) {
+      stopCatcherGame();
+      document.getElementById('catcherModalIcon').innerHTML = `<span class="text-3xl">🧺</span>`;
+      document.getElementById('catcherModalTitle').textContent = "Stack Toppled!";
+      document.getElementById('catcherModalReason').textContent = reason;
+      document.getElementById('catcherFinalStack').textContent = `${stackedLetters.length} / 22`;
+      document.getElementById('catcherFinalScore').textContent = catcherScore;
+
+      const modal = document.getElementById('catcherGameOverModal');
+      modal.classList.remove('hidden');
+      setTimeout(() => {
+        modal.classList.remove('opacity-0');
+        modal.firstElementChild.classList.remove('scale-95');
+      }, 30);
+    }
+
+    function closeCatcherGameOver() {
+      const modal = document.getElementById('catcherGameOverModal');
+      modal.classList.add('opacity-0');
+      modal.firstElementChild.classList.add('scale-95');
+      setTimeout(() => modal.classList.add('hidden'), 200);
+      stopConfetti();
+    }
+
+    function drawCatcher() {
+      const w = catcherCanvas.width;
+      const h = catcherCanvas.height;
+      catcherCtx.clearRect(0, 0, w, h);
+
+      // 1. Stars & Atmosphere in Night Sky
+      catcherCtx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+      for (let i = 0; i < 24; i++) {
+        const sx = (i * 73 + 12) % w;
+        const sy = (i * 37 + 8) % (h * 0.7);
+        catcherCtx.fillRect(sx, sy, 1.5, 1.5);
+      }
+
+      // 2. Grassy Ground at the Bottom
+      catcherCtx.fillStyle = '#0f291e';
+      catcherCtx.fillRect(0, h - 28, w, 28);
+      catcherCtx.fillStyle = '#164e39';
+      catcherCtx.fillRect(0, h - 28, w, 4);
+
+      // 3. Falling Letters & Hazards (High-Contrast, Non-Blinding Bubbles)
+      fallingDrops.forEach(drop => {
+        catcherCtx.save();
+        catcherCtx.translate(drop.x, drop.y);
+
+        if (drop.isRock) {
+          catcherCtx.fillStyle = '#334155';
+          catcherCtx.beginPath();
+          catcherCtx.arc(0, 0, drop.radius * 0.85, 0, Math.PI * 2);
+          catcherCtx.fill();
+          catcherCtx.strokeStyle = '#94a3b8';
+          catcherCtx.lineWidth = 2;
+          catcherCtx.stroke();
+
+          catcherCtx.fillStyle = '#cbd5e1';
+          catcherCtx.font = 'bold 16px sans-serif';
+          catcherCtx.textAlign = 'center';
+          catcherCtx.textBaseline = 'middle';
+          catcherCtx.fillText('🪨', 0, 0);
+
+        } else {
+          const baseColor = drop.letter.color || '#3b82f6';
+
+          catcherCtx.fillStyle = 'rgba(15, 23, 42, 0.9)';
+          catcherCtx.beginPath();
+          catcherCtx.arc(0, 0, drop.radius, 0, Math.PI * 2);
+          catcherCtx.fill();
+
+          catcherCtx.strokeStyle = baseColor;
+          catcherCtx.lineWidth = 3;
+          catcherCtx.stroke();
+
+          catcherCtx.strokeStyle = 'rgba(255, 255, 255, 0.25)';
+          catcherCtx.lineWidth = 1.5;
+          catcherCtx.beginPath();
+          catcherCtx.arc(0, 0, drop.radius - 3, 0, Math.PI * 2);
+          catcherCtx.stroke();
+
+          catcherCtx.font = "bold 26px 'Rubik', 'Varela Round', sans-serif";
+          catcherCtx.fillStyle = '#ffffff';
+          catcherCtx.textAlign = 'center';
+          catcherCtx.textBaseline = 'middle';
+          catcherCtx.fillText(drop.letter.hebrew, 0, 1);
+        }
+
+        catcherCtx.restore();
+      });
+
+      // 4. Draw Player Basket & Stacking Tower (Adaptive & Thinner Blocks)
+      const itemHeight = getStackItemHeight();
+      const basketFloorY = h - 28;
+      const wobbleX = Math.sin(Date.now() * 0.05) * basketWobble;
+
+      catcherCtx.save();
+      catcherCtx.translate(basketX + wobbleX, basketFloorY);
+
+      // Draw Basket Cart / Base
+      catcherCtx.fillStyle = '#854d0e';
+      catcherCtx.beginPath();
+      catcherCtx.roundRect(-BASKET_WIDTH / 2, -BASKET_HEIGHT, BASKET_WIDTH, BASKET_HEIGHT, [4, 4, 8, 8]);
+      catcherCtx.fill();
+      catcherCtx.strokeStyle = '#ca8a04';
+      catcherCtx.lineWidth = 2.5;
+      catcherCtx.stroke();
+
+      catcherCtx.strokeStyle = 'rgba(0, 0, 0, 0.25)';
+      catcherCtx.lineWidth = 2;
+      for (let x = -BASKET_WIDTH / 2 + 14; x < BASKET_WIDTH / 2; x += 14) {
+        catcherCtx.beginPath();
+        catcherCtx.moveTo(x, -BASKET_HEIGHT);
+        catcherCtx.lineTo(x, 0);
+        catcherCtx.stroke();
+      }
+
+      // Draw Stacking Tower Blocks inside/above the basket
+      stackedLetters.forEach((item, idx) => {
+        const itemY = -BASKET_HEIGHT - (idx + 1) * itemHeight;
+        const itemWidth = Math.max(42, BASKET_WIDTH - 10 - (idx * 0.5));
+        
+        catcherCtx.fillStyle = item.color || '#f59e0b';
+        catcherCtx.beginPath();
+        catcherCtx.roundRect(-itemWidth / 2, itemY, itemWidth, itemHeight - 1.5, 3);
+        catcherCtx.fill();
+
+        catcherCtx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+        catcherCtx.lineWidth = 1;
+        catcherCtx.stroke();
+
+        // Responsive font size tailored to thin block height
+        const fontSize = Math.max(8, Math.round(itemHeight * 0.8));
+        catcherCtx.font = `bold ${fontSize}px 'Rubik', sans-serif`;
+        catcherCtx.fillStyle = '#ffffff';
+        catcherCtx.textAlign = 'center';
+        catcherCtx.textBaseline = 'middle';
+        catcherCtx.fillText(item.hebrew, 0, itemY + itemHeight / 2);
+      });
+
+      // Draw Catch Target Line at top of tower
+      if (stackedLetters.length > 0) {
+        const topY = -BASKET_HEIGHT - (stackedLetters.length * itemHeight);
+        catcherCtx.strokeStyle = '#34d399';
+        catcherCtx.lineWidth = 2;
+        catcherCtx.setLineDash([4, 4]);
+        catcherCtx.beginPath();
+        catcherCtx.moveTo(-BASKET_WIDTH / 2 - 8, topY);
+        catcherCtx.lineTo(BASKET_WIDTH / 2 + 8, topY);
+        catcherCtx.stroke();
+        catcherCtx.setLineDash([]);
+      }
+
+      catcherCtx.restore();
+
+      // 5. Catch Burst Particles
+      catcherParticles.forEach(p => {
+        catcherCtx.fillStyle = p.color;
+        catcherCtx.globalAlpha = Math.max(0, p.life / p.maxLife);
+        catcherCtx.beginPath();
+        catcherCtx.arc(p.x, p.y, 3.5, 0, Math.PI * 2);
+        catcherCtx.fill();
+        catcherCtx.globalAlpha = 1;
+      });
+    }
+
+    // Catcher Controls (Mouse, Touch, and Keyboard)
+    catcherCanvas.addEventListener('mousemove', (e) => {
+      const rect = catcherCanvas.getBoundingClientRect();
+      targetBasketX = e.clientX - rect.left;
+    });
+
+    catcherCanvas.addEventListener('touchmove', (e) => {
+      e.preventDefault();
+      const rect = catcherCanvas.getBoundingClientRect();
+      if (e.touches.length > 0) {
+        targetBasketX = e.touches[0].clientX - rect.left;
+      }
+    }, { passive: false });
+
+    catcherCanvas.addEventListener('touchstart', (e) => {
+      const rect = catcherCanvas.getBoundingClientRect();
+      if (e.touches.length > 0) {
+        targetBasketX = e.touches[0].clientX - rect.left;
+      }
+    }, { passive: true });
+
+    window.addEventListener('keydown', (e) => {
+      if (!catcherActive) return;
+      const step = 26;
+      if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
+        targetBasketX = Math.max(BASKET_WIDTH / 2, basketX - step);
+      } else if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
+        targetBasketX = Math.min(catcherCanvas.width - BASKET_WIDTH / 2, basketX + step);
+      }
+    });
+
+    // =================================================================
+    // 8. CONFETTI ENGINE (FOR VICTORY)
     // =================================================================
     let confettiAnimationId = null;
     const confettiCanvas = document.getElementById('confettiCanvas');
