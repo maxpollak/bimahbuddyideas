@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Alef-Bet Catcher</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Google Fonts: Plus Jakarta Sans (UI) & Rubik (Hebrew with crisp Dagesh rendering) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@800;900&family=Rubik:wght@700;800;900&family=Varela+Round&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      background-color: #F7F4EA;
+      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+      user-select: none;
+      -webkit-user-select: none;
+      background-image: radial-gradient(#E2DAC7 1.5px, transparent 1.5px);
+      background-size: 24px 24px;
+    }
+
+    .font-hebrew {
+      font-family: 'Rubik', 'Varela Round', sans-serif;
+    }
+
+    /* Chunky physical tactile buttons */
+    .fun-pill-btn {
+      text-decoration: none;
+      outline: none;
+      border: 3px solid #18181B;
+      box-shadow: 4px 4px 0px #18181B;
+      transition: transform 0.1s ease, box-shadow 0.1s ease;
+    }
+    .fun-pill-btn:hover {
+      transform: translate(-2px, -2px);
+      box-shadow: 6px 6px 0px #18181B;
+    }
+    .fun-pill-btn:active {
+      transform: translate(2px, 2px);
+      box-shadow: 1px 1px 0px #18181B;
+    }
+
+    /* Deep night sky arena background */
+    .catcher-sky-bg {
+      background: linear-gradient(180deg, #091a2e 0%, #112a47 45%, #1d4364 78%, #143526 100%);
+    }
+  </style>
+</head>
+<body class="min-h-screen w-full flex flex-col justify-between p-3 sm:p-6 selection:bg-emerald-400 selection:text-zinc-950">
+
+  <!-- Floating Confetti Canvas for Victory -->
+  <canvas id="confettiCanvas" class="fixed inset-0 pointer-events-none z-50 w-full h-full"></canvas>
+
+  <!-- Top Header Bar -->
+  <header class="w-full max-w-4xl mx-auto flex flex-wrap items-center justify-between gap-3 pb-3 border-b-4 border-zinc-950">
+    <!-- Left Navigation & Title -->
+    <div class="flex items-center gap-3">
+      <a href="letters.html" 
+         class="fun-pill-btn px-4 py-2 rounded-2xl bg-white text-zinc-950 font-black text-sm flex items-center gap-1.5 cursor-pointer">
+        <span class="text-base leading-none">&larr;</span>
+        <span>Back</span>
+      </a>
+      <div>
+        <h1 class="text-xl sm:text-2xl font-black text-zinc-950 tracking-tight">
+          Alef-Bet Catcher
+        </h1>
+        <p class="text-[11px] font-bold text-zinc-500">Catch the falling letters in alphabetical order!</p>
+      </div>
+    </div>
+
+    <!-- Right Action Tools -->
+    <div class="flex items-center gap-2">
+      <!-- Audio Toggle Button -->
+      <button onclick="toggleAudio()" class="fun-pill-btn p-2 rounded-2xl bg-white text-zinc-950 cursor-pointer" title="Toggle Sound">
+        <svg id="soundIconOn" class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+        </svg>
+        <svg id="soundIconOff" class="w-5 h-5 hidden text-zinc-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
+        </svg>
+      </button>
+
+      <!-- Restart Button -->
+      <button onclick="startCatcherGame()" class="fun-pill-btn px-4 py-2 rounded-2xl bg-[#34D399] text-zinc-950 font-black text-xs sm:text-sm cursor-pointer">
+        Restart
+      </button>
+    </div>
+  </header>
+
+  <!-- Catcher Arena Container -->
+  <div id="catcherContainer" class="relative w-full max-w-4xl mx-auto aspect-[9/14] sm:aspect-[4/3] max-h-[72vh] my-3 catcher-sky-bg border-4 border-zinc-950 rounded-[2.5rem] overflow-hidden shadow-[8px_8px_0px_#18181B] flex items-center justify-center cursor-ew-resize">
+    
+    <!-- Active Canvas -->
+    <canvas id="catcherCanvas" class="w-full h-full block touch-none relative z-10"></canvas>
+
+    <!-- Top Live HUD -->
+    <div class="absolute top-3 inset-x-4 flex items-center justify-between pointer-events-none z-20">
+      <!-- Challenge Badge (No upcoming letter spoiler!) -->
+      <div id="catcherTargetBox" class="flex items-center gap-2 px-3.5 py-1.5 rounded-2xl bg-white/95 border-3 border-zinc-950 shadow-[3px_3px_0px_#18181B] transition-all duration-300">
+        <span class="text-xs uppercase tracking-widest text-emerald-600 font-black">Order:</span>
+        <span id="catcherTargetPrompt" class="text-xs sm:text-sm font-black text-zinc-950 font-mono">Letter #1</span>
+      </div>
+
+      <!-- Live Counters: Stack Progress, Score & Strikes -->
+      <div class="flex items-center gap-2 sm:gap-3">
+        <!-- Tower Height Counter -->
+        <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-2xl bg-white/95 border-3 border-zinc-950 shadow-[3px_3px_0px_#18181B]">
+          <span class="text-xs text-amber-600 font-black">🪜 Stack:</span>
+          <span id="catcherStackHud" class="text-xs sm:text-sm font-mono font-black text-zinc-950">0</span>
+          <span id="catcherTotalLettersHud" class="text-[10px] text-zinc-400 font-bold">/26</span>
+        </div>
+
+        <!-- Score -->
+        <div class="flex items-center gap-1 px-3 py-1.5 rounded-2xl bg-white/95 border-3 border-zinc-950 shadow-[3px_3px_0px_#18181B]">
+          <span class="text-xs text-zinc-500 font-black uppercase">Score:</span>
+          <span id="catcherScoreHud" class="text-base font-black text-zinc-950 font-mono">0</span>
+        </div>
+
+        <!-- Strikes Display (3 Strikes Max) -->
+        <div id="catcherLivesHud" class="flex gap-1 bg-white/95 px-2.5 py-1.5 rounded-2xl border-3 border-zinc-950 shadow-[3px_3px_0px_#18181B] text-sm">
+          <span class="text-rose-500">❌</span>
+          <span class="text-rose-500">❌</span>
+          <span class="text-rose-500">❌</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- On-screen Bottom Helper Hint -->
+    <div class="absolute bottom-2.5 inset-x-0 text-center pointer-events-none z-20">
+      <span class="text-[10px] font-bold text-white/70 bg-zinc-950/60 px-3 py-1 rounded-full border border-white/20 backdrop-blur">
+        Move basket with Cursor, Touch/Drag, or ◀ ▶ Arrow Keys
+      </span>
+    </div>
+  </div>
+
+  <footer class="w-full text-center py-2 text-xs text-zinc-500 font-bold">
+    Catch the Hebrew letters in alphabetical order! Stacks stay thin so you always have room to react!
+  </footer>
+
+  <!-- ========================================== -->
+  <!-- MODAL: GAME OVER / VICTORY DIALOG          -->
+  <!-- ========================================== -->
+  <div id="catcherGameOverModal" class="fixed inset-0 bg-zinc-950/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden opacity-0 transition-opacity duration-200">
+    <div class="bg-white border-4 border-zinc-950 rounded-[2rem] p-6 sm:p-8 max-w-sm w-full text-center shadow-[8px_8px_0px_#18181B] transform scale-95 transition-transform duration-200">
+      <div id="catcherModalIcon" class="w-16 h-16 mx-auto rounded-full bg-emerald-400 border-4 border-zinc-950 flex items-center justify-center mb-3 shadow-[3px_3px_0px_#18181B]">
+        <span class="text-3xl">🧺</span>
+      </div>
+
+      <h2 id="catcherModalTitle" class="text-2xl font-black text-zinc-950 mb-1">Stack Complete!</h2>
+      <p id="catcherModalReason" class="text-xs text-zinc-600 font-bold mb-5">You caught all letters!</p>
+
+      <div class="grid grid-cols-2 gap-3 mb-5 bg-[#F7F4EA] p-3 rounded-2xl border-3 border-zinc-950 text-center">
+        <div>
+          <p class="text-[9px] text-zinc-500 uppercase font-black">Letters Stacked</p>
+          <p id="catcherFinalStack" class="text-xl font-mono font-black text-emerald-600 mt-0.5">0 / 26</p>
+        </div>
+        <div>
+          <p class="text-[9px] text-zinc-500 uppercase font-black">Final Score</p>
+          <p id="catcherFinalScore" class="text-xl font-mono font-black text-zinc-950 mt-0.5">0</p>
+        </div>
+      </div>
+
+      <div class="flex flex-col gap-2.5">
+        <button onclick="closeCatcherGameOver(); startCatcherGame();" class="fun-pill-btn w-full py-3 rounded-2xl bg-[#34D399] text-zinc-950 font-black text-sm cursor-pointer">
+          Play Again
+        </button>
+        <a href="letters.html" class="fun-pill-btn w-full py-2.5 rounded-2xl bg-white text-zinc-950 font-black text-xs cursor-pointer text-center block">
+          Back to Games Menu
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // =================================================================
+    // 1. DATA DEFINITIONS (FULL 26 LETTER SEQUENCE WITH DAGESH)
+    // =================================================================
+    const ALL_LETTERS = [
+      { id: 'alef', hebrew: 'א', name: 'Alef', color: '#f59e0b', dagesh: false },
+      { id: 'bet', hebrew: 'בּ', name: 'Bet', color: '#10b981', dagesh: true },
+      { id: 'vet', hebrew: 'ב', name: 'Vet', color: '#059669', dagesh: false },
+      { id: 'gimel', hebrew: 'ג', name: 'Gimel', color: '#38bdf8', dagesh: false },
+      { id: 'dalet', hebrew: 'ד', name: 'Dalet', color: '#a855f7', dagesh: false },
+      { id: 'hei', hebrew: 'ה', name: 'Hei', color: '#ec4899', dagesh: false },
+      { id: 'vav', hebrew: 'ו', name: 'Vav', color: '#f97316', dagesh: false },
+      { id: 'zayin', hebrew: 'ז', name: 'Zayin', color: '#eab308', dagesh: false },
+      { id: 'chet', hebrew: 'ח', name: 'Chet', color: '#14b8a6', dagesh: false },
+      { id: 'tet', hebrew: 'ט', name: 'Tet', color: '#06b6d4', dagesh: false },
+      { id: 'yud', hebrew: 'י', name: 'Yud', color: '#8b5cf6', dagesh: false },
+      { id: 'kaf', hebrew: 'כּ', name: 'Kaf', color: '#d946ef', dagesh: true },
+      { id: 'chaf', hebrew: 'כ', name: 'Chaf', color: '#c026d3', dagesh: false },
+      { id: 'lamed', hebrew: 'ל', name: 'Lamed', color: '#f43f5e', dagesh: false },
+      { id: 'mem', hebrew: 'מ', name: 'Mem', color: '#ea580c', dagesh: false },
+      { id: 'nun', hebrew: 'נ', name: 'Nun', color: '#ca8a04', dagesh: false },
+      { id: 'samech', hebrew: 'ס', name: 'Samech', color: '#84cc16', dagesh: false },
+      { id: 'ayin', hebrew: 'ע', name: 'Ayin', color: '#10b981', dagesh: false },
+      { id: 'pei', hebrew: 'פּ', name: 'Pei', color: '#0284c7', dagesh: true },
+      { id: 'fei', hebrew: 'פ', name: 'Fei', color: '#0369a1', dagesh: false },
+      { id: 'tzadik', hebrew: 'צ', name: 'Tzadik', color: '#2563eb', dagesh: false },
+      { id: 'kuf', hebrew: 'ק', name: 'Kuf', color: '#4f46e5', dagesh: false },
+      { id: 'reish', hebrew: 'ר', name: 'Reish', color: '#7c3aed', dagesh: false },
+      { id: 'shin', hebrew: 'שׁ', name: 'Shin', color: '#db2777', dagesh: false },
+      { id: 'sin', hebrew: 'שׂ', name: 'Sin', color: '#e11d48', dagesh: false },
+      { id: 'tav', hebrew: 'תּ', name: 'Tav', color: '#e11d48', dagesh: true }
+    ];
+
+    // =================================================================
+    // 2. AUDIO SYNTHESIS VIA WEB AUDIO API
+    // =================================================================
+    let audioEnabled = true;
+    let audioCtx = null;
+
+    function initAudioContext() {
+      if (!audioCtx) {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (AudioContext) audioCtx = new AudioContext();
+      }
+      if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    }
+
+    function playTone(freq, type = 'sine', duration = 0.15, gainVal = 0.1) {
+      if (!audioEnabled) return;
+      try {
+        initAudioContext();
+        if (!audioCtx) return;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(gainVal, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+      } catch (e) {}
+    }
+
+    function soundFlip() { playTone(480, 'sine', 0.08, 0.08); }
+    function soundMismatch() {
+      if (!audioEnabled) return;
+      playTone(240, 'sawtooth', 0.18, 0.07);
+      setTimeout(() => playTone(190, 'sawtooth', 0.22, 0.07), 80);
+    }
+    function soundCrash() {
+      if (!audioEnabled) return;
+      playTone(180, 'sawtooth', 0.22, 0.14);
+      setTimeout(() => playTone(110, 'sawtooth', 0.3, 0.14), 70);
+    }
+    function soundVictory() {
+      if (!audioEnabled) return;
+      [523.25, 659.25, 783.99, 1046.50].forEach((n, i) => {
+        setTimeout(() => playTone(n, 'sine', 0.2, 0.16), i * 120);
+      });
+    }
+
+    // Melodic ascending chime as tower builds up
+    function soundCatchSuccess(stackIndex = 0) {
+      if (!audioEnabled) return;
+      const baseFreq = 392; // G4
+      const noteFreq = baseFreq * Math.pow(1.05946, Math.min(26, stackIndex));
+      playTone(noteFreq, 'triangle', 0.16, 0.12);
+      setTimeout(() => playTone(noteFreq * 1.25, 'sine', 0.14, 0.08), 45);
+    }
+
+    function toggleAudio() {
+      audioEnabled = !audioEnabled;
+      document.getElementById('soundIconOn').classList.toggle('hidden', !audioEnabled);
+      document.getElementById('soundIconOff').classList.toggle('hidden', audioEnabled);
+      if (audioEnabled) {
+        initAudioContext();
+        soundFlip();
+      }
+    }
+
+    // =================================================================
+    // 3. GAME STATE & RESPONSIVE TOWER LOGIC
+    // =================================================================
+    const catcherCanvas = document.getElementById('catcherCanvas');
+    const catcherCtx = catcherCanvas.getContext('2d');
+    let catcherAnimId = null;
+    let catcherActive = false;
+
+    let catcherScore = 0;
+    let catcherStrikes = 0;
+    const MAX_CATCHER_STRIKES = 3;
+    let currentAlphabetIndex = 0; // Index 0 to 25
+    
+    // Basket player position & motion
+    let basketX = 0;
+    let targetBasketX = 0;
+    const BASKET_WIDTH = 88;
+    const BASKET_HEIGHT = 24;
+
+    // Stack thickness helper:
+    // Ensures all 26 letters take up max 45% of container height, leaving 55% reaction runway
+    function getStackItemHeight() {
+      const h = catcherCanvas.height || 500;
+      const maxTotalStackH = h * 0.44;
+      const computed = Math.floor(maxTotalStackH / ALL_LETTERS.length);
+      return Math.max(8, Math.min(13, computed));
+    }
+
+    let stackedLetters = [];
+    let fallingDrops = [];
+    let catcherParticles = [];
+    let dropSpawnTimer = 0;
+    let catcherLastTime = 0;
+    let basketWobble = 0;
+
+    function resizeCatcherCanvas() {
+      const container = document.getElementById('catcherContainer');
+      if (!container) return;
+      const rect = container.getBoundingClientRect();
+      catcherCanvas.width = rect.width;
+      catcherCanvas.height = rect.height;
+      if (basketX === 0) {
+        basketX = catcherCanvas.width / 2;
+        targetBasketX = basketX;
+      }
+    }
+    window.addEventListener('resize', resizeCatcherCanvas);
+
+    function updateCatcherLivesDisplay() {
+      const livesContainer = document.getElementById('catcherLivesHud');
+      livesContainer.innerHTML = '';
+      for (let i = 0; i < MAX_CATCHER_STRIKES; i++) {
+        const strikeSpan = document.createElement('span');
+        if (i < catcherStrikes) {
+          strikeSpan.className = 'text-rose-500 font-bold';
+          strikeSpan.textContent = '❌';
+        } else {
+          strikeSpan.className = 'text-zinc-300';
+          strikeSpan.textContent = '⚪';
+        }
+        livesContainer.appendChild(strikeSpan);
+      }
+    }
+
+    function updateCatcherTargetHud() {
+      const promptEl = document.getElementById('catcherTargetPrompt');
+      const boxEl = document.getElementById('catcherTargetBox');
+      const stackHud = document.getElementById('catcherStackHud');
+      const totalHud = document.getElementById('catcherTotalLettersHud');
+
+      if (totalHud) totalHud.textContent = `/${ALL_LETTERS.length}`;
+
+      if (currentAlphabetIndex < ALL_LETTERS.length) {
+        // Only indicate the sequential index (does NOT spoil the upcoming letter)
+        if (promptEl) promptEl.textContent = `Letter #${currentAlphabetIndex + 1}`;
+        if (stackHud) stackHud.textContent = stackedLetters.length;
+        if (boxEl) {
+          boxEl.classList.add('scale-105', 'border-emerald-500');
+          setTimeout(() => {
+            boxEl.classList.remove('scale-105', 'border-emerald-500');
+          }, 260);
+        }
+      }
+    }
+
+    function startCatcherGame() {
+      resizeCatcherCanvas();
+      catcherActive = true;
+      catcherScore = 0;
+      catcherStrikes = 0;
+      currentAlphabetIndex = 0;
+      stackedLetters = [];
+      fallingDrops = [];
+      catcherParticles = [];
+      dropSpawnTimer = 0;
+      basketWobble = 0;
+
+      basketX = catcherCanvas.width / 2;
+      targetBasketX = basketX;
+
+      document.getElementById('catcherScoreHud').textContent = '0';
+      updateCatcherLivesDisplay();
+      updateCatcherTargetHud();
+      closeCatcherGameOver();
+
+      catcherLastTime = performance.now();
+      cancelAnimationFrame(catcherAnimId);
+      catcherAnimId = requestAnimationFrame(catcherGameLoop);
+    }
+
+    function stopCatcherGame() {
+      catcherActive = false;
+      cancelAnimationFrame(catcherAnimId);
+    }
+
+    function spawnFallingDrop() {
+      const w = catcherCanvas.width;
+      const targetLetter = ALL_LETTERS[currentAlphabetIndex];
+      const isRock = Math.random() < 0.15; // 15% hazard rock
+      
+      let letterData = null;
+      if (!isRock) {
+        // 45% chance of tossing the exact letter needed next
+        if (Math.random() < 0.45) {
+          letterData = targetLetter;
+        } else {
+          // Pick a random other letter from the alphabet
+          const otherLetters = ALL_LETTERS.filter((_, idx) => idx !== currentAlphabetIndex);
+          letterData = otherLetters[Math.floor(Math.random() * otherLetters.length)];
+        }
+      }
+
+      // Gentle fall speed scaling that never turns into an unreadable blur
+      const stackRatio = stackedLetters.length / ALL_LETTERS.length;
+      const baseFallSpeed = 135 + stackRatio * 60;
+
+      fallingDrops.push({
+        x: 36 + Math.random() * (w - 72),
+        y: -36,
+        speed: baseFallSpeed + (Math.random() - 0.5) * 20,
+        radius: 25,
+        isRock: isRock,
+        letter: letterData,
+        caught: false
+      });
+    }
+
+    function catcherGameLoop(timestamp) {
+      if (!catcherActive) return;
+      const dt = Math.min((timestamp - catcherLastTime) / 1000, 0.08);
+      catcherLastTime = timestamp;
+
+      updateCatcher(dt);
+      drawCatcher();
+
+      catcherAnimId = requestAnimationFrame(catcherGameLoop);
+    }
+
+    function updateCatcher(dt) {
+      const w = catcherCanvas.width;
+      const h = catcherCanvas.height;
+
+      // Smooth basket movement toward target cursor
+      basketX += (targetBasketX - basketX) * Math.min(1, 18 * dt);
+      basketX = Math.max(BASKET_WIDTH / 2, Math.min(w - BASKET_WIDTH / 2, basketX));
+
+      // Dampen wobble impulse
+      basketWobble *= Math.pow(0.05, dt);
+
+      // Calculate dynamic catch threshold at the top of the stack
+      const itemHeight = getStackItemHeight();
+      const towerHeight = stackedLetters.length * itemHeight;
+      const basketFloorY = h - 28;
+      const stackCatchTopY = basketFloorY - BASKET_HEIGHT - towerHeight;
+
+      // Spawning interval smoothly tightens
+      dropSpawnTimer += dt;
+      const spawnInterval = Math.max(0.75, 1.45 - (stackedLetters.length / ALL_LETTERS.length) * 0.45);
+      if (dropSpawnTimer > spawnInterval) {
+        spawnFallingDrop();
+        dropSpawnTimer = 0;
+      }
+
+      // Check drops
+      for (let i = fallingDrops.length - 1; i >= 0; i--) {
+        const drop = fallingDrops[i];
+        drop.y += drop.speed * dt;
+
+        // Hit testing at current summit of the basket stack
+        const hitCatchZone = (drop.y + drop.radius >= stackCatchTopY) && (drop.y - drop.radius <= stackCatchTopY + 20);
+        const hitHorizontalZone = Math.abs(drop.x - basketX) < (BASKET_WIDTH / 2 + 10);
+
+        if (hitCatchZone && hitHorizontalZone && !drop.caught) {
+          drop.caught = true;
+          handleCatcherCatch(drop, stackCatchTopY);
+          fallingDrops.splice(i, 1);
+          continue;
+        }
+
+        // Drops that hit the ground fall off harmlessly without penalty
+        if (drop.y > h + 45) {
+          fallingDrops.splice(i, 1);
+        }
+      }
+
+      // Update particle effects
+      for (let i = catcherParticles.length - 1; i >= 0; i--) {
+        const p = catcherParticles[i];
+        p.x += p.vx * dt;
+        p.y += p.vy * dt;
+        p.life -= dt;
+        if (p.life <= 0) {
+          catcherParticles.splice(i, 1);
+        }
+      }
+    }
+
+    function handleCatcherCatch(drop, catchY) {
+      if (drop.isRock) {
+        soundCrash();
+        basketWobble = 14;
+        recordCatcherStrike("You caught a falling rock! 🪨");
+        return;
+      }
+
+      const targetLetter = ALL_LETTERS[currentAlphabetIndex];
+
+      if (drop.letter.id === targetLetter.id) {
+        // Correct alphabetical letter caught
+        soundCatchSuccess(stackedLetters.length);
+        catcherScore += 150 + stackedLetters.length * 20;
+        document.getElementById('catcherScoreHud').textContent = catcherScore;
+
+        stackedLetters.push({
+          id: drop.letter.id,
+          hebrew: drop.letter.hebrew,
+          name: drop.letter.name,
+          color: drop.letter.color
+        });
+
+        // Burst particles at catch contact point
+        for (let i = 0; i < 14; i++) {
+          catcherParticles.push({
+            x: basketX,
+            y: catchY,
+            vx: (Math.random() - 0.5) * 200,
+            vy: (Math.random() - 0.5) * 180 - 40,
+            color: drop.letter.color,
+            life: 0.4,
+            maxLife: 0.4
+          });
+        }
+
+        currentAlphabetIndex++;
+
+        // Completed the full alphabet
+        if (currentAlphabetIndex >= ALL_LETTERS.length) {
+          handleCatcherVictory();
+        } else {
+          updateCatcherTargetHud();
+        }
+
+      } else {
+        // Out of order letter caught: penalty strike
+        soundMismatch();
+        basketWobble = 10;
+        recordCatcherStrike(`Wrong letter caught! That was ${drop.letter.name} (${drop.letter.hebrew})!`);
+      }
+    }
+
+    function recordCatcherStrike(reason) {
+      catcherStrikes++;
+      updateCatcherLivesDisplay();
+      if (catcherStrikes >= MAX_CATCHER_STRIKES) {
+        handleCatcherGameOver(reason);
+      }
+    }
+
+    function handleCatcherVictory() {
+      stopCatcherGame();
+      soundVictory();
+      launchConfetti();
+
+      document.getElementById('catcherModalIcon').innerHTML = `<span class="text-3xl">🏆</span>`;
+      document.getElementById('catcherModalTitle').textContent = "Kol HaKavod! Full Stack!";
+      document.getElementById('catcherModalReason').textContent = `You caught all ${ALL_LETTERS.length} letters in perfect alphabetical order!`;
+      document.getElementById('catcherFinalStack').textContent = `${ALL_LETTERS.length} / ${ALL_LETTERS.length}`;
+      document.getElementById('catcherFinalScore').textContent = catcherScore;
+
+      const modal = document.getElementById('catcherGameOverModal');
+      modal.classList.remove('hidden');
+      setTimeout(() => {
+        modal.classList.remove('opacity-0');
+        modal.firstElementChild.classList.remove('scale-95');
+      }, 30);
+    }
+
+    function handleCatcherGameOver(reason) {
+      stopCatcherGame();
+      document.getElementById('catcherModalIcon').innerHTML = `<span class="text-3xl">🧺</span>`;
+      document.getElementById('catcherModalTitle').textContent = "Stack Toppled!";
+      document.getElementById('catcherModalReason').textContent = reason;
+      document.getElementById('catcherFinalStack').textContent = `${stackedLetters.length} / ${ALL_LETTERS.length}`;
+      document.getElementById('catcherFinalScore').textContent = catcherScore;
+
+      const modal = document.getElementById('catcherGameOverModal');
+      modal.classList.remove('hidden');
+      setTimeout(() => {
+        modal.classList.remove('opacity-0');
+        modal.firstElementChild.classList.remove('scale-95');
+      }, 30);
+    }
+
+    function closeCatcherGameOver() {
+      const modal = document.getElementById('catcherGameOverModal');
+      modal.classList.add('opacity-0');
+      modal.firstElementChild.classList.add('scale-95');
+      setTimeout(() => modal.classList.add('hidden'), 200);
+      stopConfetti();
+    }
+
+    // =================================================================
+    // 4. CANVAS DRAWING ROUTINES
+    // =================================================================
+    function drawCatcher() {
+      const w = catcherCanvas.width;
+      const h = catcherCanvas.height;
+      catcherCtx.clearRect(0, 0, w, h);
+
+      // 1. Distant ambient stars
+      catcherCtx.fillStyle = 'rgba(255, 255, 255, 0.45)';
+      for (let i = 0; i < 24; i++) {
+        const sx = (i * 71 + 14) % w;
+        const sy = (i * 37 + 12) % (h * 0.68);
+        catcherCtx.fillRect(sx, sy, 1.5, 1.5);
+      }
+
+      // 2. Grassy Ground Turf
+      catcherCtx.fillStyle = '#0e241b';
+      catcherCtx.fillRect(0, h - 28, w, 28);
+      catcherCtx.fillStyle = '#1b4d3a';
+      catcherCtx.fillRect(0, h - 28, w, 5);
+
+      // 3. Falling Items (High-contrast, non-glare bubbles)
+      fallingDrops.forEach(drop => {
+        catcherCtx.save();
+        catcherCtx.translate(drop.x, drop.y);
+
+        if (drop.isRock) {
+          // Hazard Rock
+          catcherCtx.fillStyle = '#27272a';
+          catcherCtx.beginPath();
+          catcherCtx.arc(0, 0, drop.radius * 0.85, 0, Math.PI * 2);
+          catcherCtx.fill();
+          catcherCtx.strokeStyle = '#71717a';
+          catcherCtx.lineWidth = 2.5;
+          catcherCtx.stroke();
+
+          catcherCtx.fillStyle = '#e4e4e7';
+          catcherCtx.font = 'bold 16px sans-serif';
+          catcherCtx.textAlign = 'center';
+          catcherCtx.textBaseline = 'middle';
+          catcherCtx.fillText('🪨', 0, 0);
+
+        } else {
+          // Non-glare high contrast letter badge
+          const baseColor = drop.letter.color || '#38bdf8';
+
+          // Solid dark badge base
+          catcherCtx.fillStyle = '#18181b';
+          catcherCtx.beginPath();
+          catcherCtx.arc(0, 0, drop.radius, 0, Math.PI * 2);
+          catcherCtx.fill();
+
+          // Vibrant colored outer rim
+          catcherCtx.strokeStyle = baseColor;
+          catcherCtx.lineWidth = 3.5;
+          catcherCtx.stroke();
+
+          // Inner rim
+          catcherCtx.strokeStyle = 'rgba(255, 255, 255, 0.25)';
+          catcherCtx.lineWidth = 1.5;
+          catcherCtx.beginPath();
+          catcherCtx.arc(0, 0, drop.radius - 3.5, 0, Math.PI * 2);
+          catcherCtx.stroke();
+
+          // Crisp white Hebrew letter
+          catcherCtx.font = "bold 26px 'Rubik', 'Varela Round', sans-serif";
+          catcherCtx.fillStyle = '#ffffff';
+          catcherCtx.textAlign = 'center';
+          catcherCtx.textBaseline = 'middle';
+          catcherCtx.fillText(drop.letter.hebrew, 0, 1.5);
+        }
+
+        catcherCtx.restore();
+      });
+
+      // 4. Draw Player Basket & Stacking Tower (Adaptive & Thinner Blocks)
+      const itemHeight = getStackItemHeight();
+      const basketFloorY = h - 28;
+      const wobbleX = Math.sin(Date.now() * 0.05) * basketWobble;
+
+      catcherCtx.save();
+      catcherCtx.translate(basketX + wobbleX, basketFloorY);
+
+      // Draw Basket Cart / Base
+      catcherCtx.fillStyle = '#ca8a04'; // Warm honey woven basket
+      catcherCtx.beginPath();
+      catcherCtx.roundRect(-BASKET_WIDTH / 2, -BASKET_HEIGHT, BASKET_WIDTH, BASKET_HEIGHT, [5, 5, 8, 8]);
+      catcherCtx.fill();
+      catcherCtx.strokeStyle = '#18181b';
+      catcherCtx.lineWidth = 3.5;
+      catcherCtx.stroke();
+
+      // Basket texture weaves
+      catcherCtx.strokeStyle = 'rgba(24, 24, 27, 0.3)';
+      catcherCtx.lineWidth = 2;
+      for (let x = -BASKET_WIDTH / 2 + 14; x < BASKET_WIDTH / 2; x += 14) {
+        catcherCtx.beginPath();
+        catcherCtx.moveTo(x, -BASKET_HEIGHT);
+        catcherCtx.lineTo(x, 0);
+        catcherCtx.stroke();
+      }
+
+      // Draw Stacked Letters Tower
+      stackedLetters.forEach((item, idx) => {
+        const itemY = -BASKET_HEIGHT - (idx + 1) * itemHeight;
+        const itemWidth = Math.max(44, BASKET_WIDTH - 10 - (idx * 0.45));
+        
+        catcherCtx.fillStyle = item.color || '#f59e0b';
+        catcherCtx.beginPath();
+        catcherCtx.roundRect(-itemWidth / 2, itemY, itemWidth, itemHeight - 1.5, 3);
+        catcherCtx.fill();
+
+        catcherCtx.strokeStyle = '#18181b';
+        catcherCtx.lineWidth = 1.5;
+        catcherCtx.stroke();
+
+        // Hebrew letter glyph on block face
+        const fontSize = Math.max(8, Math.round(itemHeight * 0.82));
+        catcherCtx.font = `bold ${fontSize}px 'Rubik', sans-serif`;
+        catcherCtx.fillStyle = '#ffffff';
+        catcherCtx.textAlign = 'center';
+        catcherCtx.textBaseline = 'middle';
+        catcherCtx.fillText(item.hebrew, 0, itemY + itemHeight / 2);
+      });
+
+      // Target Catch Indicator Line
+      if (stackedLetters.length > 0) {
+        const topY = -BASKET_HEIGHT - (stackedLetters.length * itemHeight);
+        catcherCtx.strokeStyle = '#34d399';
+        catcherCtx.lineWidth = 2;
+        catcherCtx.setLineDash([4, 4]);
+        catcherCtx.beginPath();
+        catcherCtx.moveTo(-BASKET_WIDTH / 2 - 8, topY);
+        catcherCtx.lineTo(BASKET_WIDTH / 2 + 8, topY);
+        catcherCtx.stroke();
+        catcherCtx.setLineDash([]);
+      }
+
+      catcherCtx.restore();
+
+      // 5. Particles
+      catcherParticles.forEach(p => {
+        catcherCtx.fillStyle = p.color;
+        catcherCtx.globalAlpha = Math.max(0, p.life / p.maxLife);
+        catcherCtx.beginPath();
+        catcherCtx.arc(p.x, p.y, 3.5, 0, Math.PI * 2);
+        catcherCtx.fill();
+        catcherCtx.globalAlpha = 1;
+      });
+    }
+
+    // =================================================================
+    // 5. INPUT LISTENERS (MOUSE, TOUCH, KEYBOARD)
+    // =================================================================
+    catcherCanvas.addEventListener('mousemove', (e) => {
+      const rect = catcherCanvas.getBoundingClientRect();
+      targetBasketX = e.clientX - rect.left;
+    });
+
+    catcherCanvas.addEventListener('touchmove', (e) => {
+      e.preventDefault();
+      const rect = catcherCanvas.getBoundingClientRect();
+      if (e.touches.length > 0) {
+        targetBasketX = e.touches[0].clientX - rect.left;
+      }
+    }, { passive: false });
+
+    catcherCanvas.addEventListener('touchstart', (e) => {
+      const rect = catcherCanvas.getBoundingClientRect();
+      if (e.touches.length > 0) {
+        targetBasketX = e.touches[0].clientX - rect.left;
+      }
+    }, { passive: true });
+
+    window.addEventListener('keydown', (e) => {
+      if (!catcherActive) return;
+      const step = 28;
+      if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
+        targetBasketX = Math.max(BASKET_WIDTH / 2, basketX - step);
+      } else if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
+        targetBasketX = Math.min(catcherCanvas.width - BASKET_WIDTH / 2, basketX + step);
+      }
+    });
+
+    // =================================================================
+    // 6. CONFETTI ENGINE (FOR VICTORY)
+    // =================================================================
+    let confettiAnimationId = null;
+    const confettiCanvas = document.getElementById('confettiCanvas');
+    const confettiCtx = confettiCanvas.getContext('2d');
+    let confettiParticles = [];
+
+    function resizeConfetti() {
+      confettiCanvas.width = window.innerWidth;
+      confettiCanvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeConfetti);
+    resizeConfetti();
+
+    function launchConfetti() {
+      resizeConfetti();
+      confettiParticles = [];
+      const colors = ['#FFC72C', '#38BDF8', '#FB7185', '#34D399', '#18181B'];
+
+      for (let i = 0; i < 120; i++) {
+        confettiParticles.push({
+          x: confettiCanvas.width / 2 + (Math.random() - 0.5) * 300,
+          y: confettiCanvas.height / 2 + (Math.random() - 0.5) * 100,
+          w: Math.random() * 8 + 6,
+          h: Math.random() * 6 + 4,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          vx: (Math.random() - 0.5) * 12,
+          vy: Math.random() * -12 - 4,
+          rotation: Math.random() * 360,
+          vRot: (Math.random() - 0.5) * 10,
+          opacity: 1
+        });
+      }
+
+      function update() {
+        confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+        let alive = 0;
+
+        confettiParticles.forEach(p => {
+          p.x += p.vx;
+          p.y += p.vy;
+          p.vy += 0.35;
+          p.rotation += p.vRot;
+          p.opacity -= 0.005;
+
+          if (p.opacity > 0 && p.y < confettiCanvas.height) {
+            alive++;
+            confettiCtx.save();
+            confettiCtx.globalAlpha = Math.max(0, p.opacity);
+            confettiCtx.translate(p.x, p.y);
+            confettiCtx.rotate((p.rotation * Math.PI) / 180);
+            confettiCtx.fillStyle = p.color;
+            confettiCtx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+            confettiCtx.restore();
+          }
+        });
+
+        if (alive > 0) {
+          confettiAnimationId = requestAnimationFrame(update);
+        } else {
+          confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+        }
+      }
+
+      cancelAnimationFrame(confettiAnimationId);
+      update();
+    }
+
+    function stopConfetti() {
+      cancelAnimationFrame(confettiAnimationId);
+      confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+    }
+
+    window.onload = function() {
+      startCatcherGame();
+    };
+  </script>
+</body>
+</html>
