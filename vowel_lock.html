@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vowel Lock</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Google Fonts: Plus Jakarta Sans & Rubik for Hebrew Nikkud -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@800;900&family=Rubik:wght@800;900&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      background-color: #F7F4EA;
+      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+      user-select: none;
+      -webkit-user-select: none;
+      background-image: radial-gradient(#E2DAC7 1.5px, transparent 1.5px);
+      background-size: 24px 24px;
+    }
+
+    .font-hebrew {
+      font-family: 'Rubik', sans-serif;
+    }
+
+    /* Chunky physical neo-brutalist buttons */
+    .fun-pill-btn {
+      text-decoration: none;
+      outline: none;
+      border: 3px solid #18181B;
+      box-shadow: 4px 4px 0px #18181B;
+      transition: transform 0.1s ease, box-shadow 0.1s ease;
+    }
+    .fun-pill-btn:hover {
+      transform: translate(-2px, -2px);
+      box-shadow: 6px 6px 0px #18181B;
+    }
+    .fun-pill-btn:active {
+      transform: translate(2px, 2px);
+      box-shadow: 1px 1px 0px #18181B;
+    }
+
+    /* Vault Dial / Wheel Button Styling */
+    .wheel-arrow-btn {
+      border: 2px solid #18181B;
+      box-shadow: 2px 2px 0px #18181B;
+      transition: transform 0.08s ease;
+    }
+    .wheel-arrow-btn:active {
+      transform: translate(1px, 1px);
+      box-shadow: 1px 1px 0px #18181B;
+    }
+  </style>
+</head>
+<body class="min-h-screen w-full flex flex-col justify-between p-3 sm:p-6 selection:bg-amber-400 selection:text-zinc-950">
+
+  <!-- Floating Confetti Canvas for Victory -->
+  <canvas id="confettiCanvas" class="fixed inset-0 pointer-events-none z-50 w-full h-full"></canvas>
+
+  <!-- Top Navigation Header -->
+  <header class="w-full max-w-5xl mx-auto flex flex-wrap items-center justify-between gap-3 pb-3 border-b-4 border-zinc-950">
+    <div class="flex items-center gap-3">
+      <!-- Back to Vowels Hub -->
+      <a href="vowels.html" 
+         class="fun-pill-btn px-4 py-2 rounded-2xl bg-white text-zinc-950 font-black text-sm flex items-center gap-1.5 cursor-pointer"
+         title="Return to Vowels Hub">
+        <span class="text-base leading-none">&larr;</span>
+        <span>Back</span>
+      </a>
+      <div>
+        <h1 class="text-xl sm:text-2xl font-black text-zinc-950 tracking-tight flex items-center gap-2">
+          <span>Vowel Lock</span>
+        </h1>
+      </div>
+    </div>
+
+    <!-- Right Controls: Restart Level -->
+    <div class="flex items-center gap-2">
+      <button onclick="restartGame()" class="fun-pill-btn px-4 py-2 rounded-2xl bg-[#FFC72C] text-zinc-950 font-black text-xs sm:text-sm cursor-pointer">
+        Restart Game
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Safe Stage -->
+  <main class="w-full max-w-4xl mx-auto flex-1 flex flex-col items-center justify-center my-4">
+    
+    <!-- Vault Safe Box Container -->
+    <div class="relative w-full bg-[#E2DAC7] border-4 border-zinc-950 rounded-[2.5rem] p-6 sm:p-10 shadow-[8px_8px_0px_#18181B] flex flex-col items-center justify-center">
+
+      <!-- Vault Shackle / Lock Mechanism Top Hook -->
+      <div class="relative -mt-10 sm:-mt-14 mb-2 flex justify-center">
+        <div id="lockShackle" class="w-24 sm:w-32 h-14 sm:h-18 rounded-t-full border-[7px] sm:border-[9px] border-zinc-950 bg-gradient-to-b from-zinc-200 to-zinc-400 shadow-[3px_3px_0px_#18181B] transition-transform"></div>
+      </div>
+
+      <!-- Level & Streak Progress Indicator -->
+      <div class="flex items-center gap-3 mb-5 bg-white px-4 py-1.5 rounded-2xl border-3 border-zinc-950 shadow-[3px_3px_0px_#18181B]">
+        <span class="text-xs uppercase tracking-wider font-black text-amber-600">🔐 Vault Lock Level:</span>
+        <span id="levelHud" class="text-sm font-mono font-black text-zinc-950">1 Wheel (1 in a row)</span>
+      </div>
+
+      <!-- Syllable Audio Player Controller Banner -->
+      <div class="w-full max-w-sm mb-6 flex items-center justify-center">
+        <button id="playAudioBtn" onclick="playTargetSequenceAudio()" class="fun-pill-btn w-full py-3.5 rounded-2xl bg-[#38BDF8] text-zinc-950 font-black text-base flex items-center justify-center gap-2 cursor-pointer shadow-[4px_4px_0px_#18181B]">
+          <span class="text-xl leading-none">🔊</span>
+          <span>Hear Secret Password</span>
+        </button>
+      </div>
+
+      <!-- Combination Wheels Slot Container -->
+      <div class="w-full bg-[#18181B] rounded-[2rem] p-4 sm:p-6 border-4 border-zinc-950 shadow-inner flex items-center justify-center overflow-x-auto">
+        <div id="wheelsRow" class="flex items-center justify-center gap-3 sm:gap-6 min-w-max">
+          <!-- Injected dynamically by JS -->
+        </div>
+      </div>
+
+      <!-- Action Button: Test Combination -->
+      <div class="w-full max-w-sm mt-8 flex justify-center">
+        <button onclick="checkCombination()" class="fun-pill-btn w-full py-4 rounded-2xl bg-[#34D399] text-zinc-950 font-black text-lg flex items-center justify-center gap-2 cursor-pointer shadow-[5px_5px_0px_#18181B]">
+          <span>🔓 Open Vault</span>
+        </button>
+      </div>
+
+    </div>
+
+  </main>
+
+  <footer class="w-full text-center py-2 text-xs text-zinc-500 font-bold">
+    Rotate each wheel to match the correct vowel point for the secret password!
+  </footer>
+
+  <!-- ========================================== -->
+  <!-- MODAL: VICTORY / TREASURE CHEST OPENED     -->
+  <!-- ========================================== -->
+  <div id="victoryModal" class="fixed inset-0 bg-zinc-950/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden opacity-0 transition-opacity duration-200">
+    <div class="bg-white border-4 border-zinc-950 rounded-[2rem] p-6 sm:p-8 max-w-sm w-full text-center shadow-[8px_8px_0px_#18181B] transform scale-95 transition-transform duration-200">
+      <div class="w-20 h-20 mx-auto rounded-full bg-[#FFC72C] border-4 border-zinc-950 flex items-center justify-center mb-3 shadow-[4px_4px_0px_#18181B]">
+        <span class="text-4xl">👑</span>
+      </div>
+
+      <h2 class="text-2xl font-black text-zinc-950 mb-1">Grand Vault Open!</h2>
+      <p class="text-xs text-zinc-600 font-bold mb-5">Kol HaKavod! You successfully mastered the 5-wheel vowel lock twice in a row!</p>
+
+      <div class="flex flex-col gap-2.5">
+        <button onclick="restartGame()" class="fun-pill-btn w-full py-3 rounded-2xl bg-[#34D399] text-zinc-950 font-black text-sm cursor-pointer">
+          Play Again
+        </button>
+        <a href="vowels.html" class="fun-pill-btn w-full py-2.5 rounded-2xl bg-white text-zinc-950 font-black text-xs cursor-pointer text-center block">
+          Back to Vowels Hub
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // =================================================================
+    // 1. DATA DEFINITIONS: VOWEL FAMILIES & CONSONANTS
+    // =================================================================
+    const VOWEL_FAMILIES = [
+      { sign: 'ָ' }, // Kamatz / Patach
+      { sign: 'ֵ' }, // Tzeire / Segol
+      { sign: 'ִ' }, // Chirik
+      { sign: 'ֹ' }, // Cholam
+      { sign: 'ֻ' }  // Kubutz
+    ];
+
+    const CONSONANTS = [
+      { hebrew: 'ב' }, { hebrew: 'ג' }, { hebrew: 'ד' },
+      { hebrew: 'מ' }, { hebrew: 'ל' }, { hebrew: 'ס' },
+      { hebrew: 'פ' }, { hebrew: 'ת' }, { hebrew: 'נ' }, { hebrew: 'ר' }
+    ];
+
+    // Game Progression State
+    let currentStage = 1; // 1 to 5 wheels
+    let stageStreak = 0;  // Count of correct answers at current stage
+    let activeLockSlots = []; // [{ consonant, targetVowelIndex, playerWheelIndex }]
+
+    // =================================================================
+    // 2. SPEECH SYNTHESIS ENGINE (RELIABLE VOICE PLAYBACK)
+    // =================================================================
+    function speakHebrewSyllable(textToSpeak) {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel(); // Cancel any pending speech queue immediately
+        const utterance = new SpeechSynthesisUtterance(textToSpeak);
+        utterance.lang = 'he-IL';
+        utterance.rate = 0.8; // clear distinct pace
+        window.speechSynthesis.speak(utterance);
+      }
+    }
+
+    function playTargetSequenceAudio() {
+      const btn = document.getElementById('playAudioBtn');
+      btn.classList.add('scale-95', 'bg-amber-400');
+      setTimeout(() => btn.classList.remove('scale-95', 'bg-amber-400'), 200);
+
+      // Force cancel any prior speech before starting sequence
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
+
+      activeLockSlots.forEach((slot, idx) => {
+        setTimeout(() => {
+          const fullText = slot.consonant.hebrew + VOWEL_FAMILIES[slot.targetVowelIndex].sign;
+          speakHebrewSyllable(fullText);
+        }, idx * 850);
+      });
+    }
+
+    // Web Audio API for tumbler click feedback & success/fail chimes
+    let audioCtx = null;
+    function initAudioContext() {
+      if (!audioCtx) {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (AudioContext) audioCtx = new AudioContext();
+      }
+      if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    }
+
+    function playTone(freq, type = 'sine', duration = 0.2, gainVal = 0.1) {
+      try {
+        initAudioContext();
+        if (!audioCtx) return;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(gainVal, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+      } catch (e) {}
+    }
+
+    function soundClick() { playTone(540, 'triangle', 0.05, 0.05); }
+    function soundSuccess() {
+      [523.25, 659.25, 783.99, 1046.50].forEach((n, i) => {
+        setTimeout(() => playTone(n, 'sine', 0.18, 0.12), i * 90);
+      });
+    }
+    function soundFail() {
+      playTone(220, 'sawtooth', 0.2, 0.08);
+      setTimeout(() => playTone(160, 'sawtooth', 0.25, 0.08), 90);
+    }
+    function soundVaultOpen() {
+      [440, 554.37, 659.25, 880, 1108.73].forEach((n, i) => {
+        setTimeout(() => playTone(n, 'triangle', 0.25, 0.12), i * 110);
+      });
+    }
+
+    // =================================================================
+    // 3. LEVEL GENERATION & STAGE MANAGEMENT
+    // =================================================================
+    function initGame() {
+      currentStage = 1;
+      stageStreak = 0;
+      generateNewStagePuzzle();
+    }
+
+    function generateNewStagePuzzle() {
+      activeLockSlots = [];
+      const shuffledConsonants = [...CONSONANTS].sort(() => Math.random() - 0.5);
+
+      for (let i = 0; i < currentStage; i++) {
+        const cons = shuffledConsonants[i % shuffledConsonants.length];
+        const targetVowelIdx = Math.floor(Math.random() * VOWEL_FAMILIES.length);
+        
+        let startVowelIdx = Math.floor(Math.random() * VOWEL_FAMILIES.length);
+        if (currentStage === 1 && startVowelIdx === targetVowelIdx) {
+          startVowelIdx = (targetVowelIdx + 2) % VOWEL_FAMILIES.length;
+        }
+
+        activeLockSlots.push({
+          consonant: cons,
+          targetVowelIndex: targetVowelIdx,
+          playerWheelIndex: startVowelIdx
+        });
+      }
+
+      renderLockWheels();
+      updateLevelHud();
+
+      setTimeout(() => {
+        playTargetSequenceAudio();
+      }, 500);
+    }
+
+    function updateLevelHud() {
+      const hud = document.getElementById('levelHud');
+      if (currentStage === 5) {
+        hud.textContent = `5 Wheels (Final Stage: ${stageStreak}/2)`;
+      } else {
+        hud.textContent = `${currentStage} Wheel(s) (${stageStreak}/2 in a row)`;
+      }
+    }
+
+    // =================================================================
+    // 4. RENDERING WHEELS & TUMBLER INTERACTION
+    // =================================================================
+    function renderLockWheels() {
+      const container = document.getElementById('wheelsRow');
+      container.innerHTML = '';
+
+      activeLockSlots.forEach((slot, wheelIndex) => {
+        const vIdx = slot.playerWheelIndex;
+        const currentVowelObj = VOWEL_FAMILIES[vIdx];
+        
+        const fullGlyph = slot.consonant.hebrew + currentVowelObj.sign;
+        const prevGlyph = slot.consonant.hebrew + VOWEL_FAMILIES[(vIdx - 1 + VOWEL_FAMILIES.length) % VOWEL_FAMILIES.length].sign;
+        const nextGlyph = slot.consonant.hebrew + VOWEL_FAMILIES[(vIdx + 1) % VOWEL_FAMILIES.length].sign;
+
+        const wheelCard = document.createElement('div');
+        wheelCard.className = 'flex flex-col items-center bg-white border-3 border-zinc-950 rounded-2xl p-3 shadow-[4px_4px_0px_#18181B] w-28 sm:w-32';
+
+        wheelCard.innerHTML = `
+          <!-- Rotate Up Arrow Button -->
+          <button onclick="rotateWheel(${wheelIndex}, -1)" class="wheel-arrow-btn w-full h-8 rounded-xl bg-amber-400 text-zinc-950 flex items-center justify-center font-black text-sm mb-2 cursor-pointer">
+            ▲
+          </button>
+
+          <!-- Central Cylinder Tumbler Window -->
+          <div class="relative w-full h-20 sm:h-24 bg-zinc-100 border-2 border-zinc-950 rounded-xl overflow-hidden flex flex-col items-center justify-center shadow-inner">
+            <div class="font-hebrew text-lg sm:text-2xl text-zinc-400 opacity-40 blur-[0.5px]">
+              ${prevGlyph}
+            </div>
+
+            <div class="relative z-10 flex flex-col items-center justify-center py-1">
+              <span class="font-hebrew text-4xl sm:text-5xl font-black text-zinc-950 leading-tight drop-shadow-sm">
+                ${fullGlyph}
+              </span>
+            </div>
+
+            <div class="font-hebrew text-lg sm:text-2xl text-zinc-400 opacity-40 blur-[0.5px]">
+              ${nextGlyph}
+            </div>
+
+            <div class="absolute inset-x-0 top-1/2 -translate-y-1/2 h-16 sm:h-20 border-y-2 border-zinc-950/20 pointer-events-none bg-amber-400/10"></div>
+          </div>
+
+          <!-- Rotate Down Arrow Button -->
+          <button onclick="rotateWheel(${wheelIndex}, 1)" class="wheel-arrow-btn w-full h-8 rounded-xl bg-amber-400 text-zinc-950 flex items-center justify-center font-black text-sm mt-2 cursor-pointer">
+            ▼
+          </button>
+        `;
+
+        container.appendChild(wheelCard);
+      });
+    }
+
+    function rotateWheel(wheelIndex, direction) {
+      soundClick();
+      const slot = activeLockSlots[wheelIndex];
+      slot.playerWheelIndex = (slot.playerWheelIndex + direction + VOWEL_FAMILIES.length) % VOWEL_FAMILIES.length;
+      renderLockWheels();
+    }
+
+    // =================================================================
+    // 5. COMBINATION VERIFICATION & PROGRESSION
+    // =================================================================
+    function checkCombination() {
+      let allCorrect = true;
+      activeLockSlots.forEach(slot => {
+        if (slot.playerWheelIndex !== slot.targetVowelIndex) {
+          allCorrect = false;
+        }
+      });
+
+      const shackle = document.getElementById('lockShackle');
+
+      if (allCorrect) {
+        soundSuccess();
+        stageStreak++;
+        shackle.classList.add('-translate-y-6', 'rotate-6');
+
+        if (currentStage === 5 && stageStreak >= 2) {
+          soundVaultOpen();
+          launchConfetti();
+          setTimeout(() => {
+            const modal = document.getElementById('victoryModal');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+              modal.classList.remove('opacity-0');
+              modal.firstElementChild.classList.remove('scale-95');
+            }, 20);
+          }, 400);
+          return;
+        }
+
+        if (stageStreak >= 2 && currentStage < 5) {
+          currentStage++;
+          stageStreak = 0;
+        }
+
+        setTimeout(() => {
+          shackle.classList.remove('-translate-y-6', 'rotate-6');
+          generateNewStagePuzzle();
+        }, 750);
+
+      } else {
+        soundFail();
+        stageStreak = 0;
+        updateLevelHud();
+
+        const box = shackle.parentElement.parentElement;
+        box.classList.add('translate-x-2');
+        setTimeout(() => box.classList.remove('translate-x-2'), 90);
+        setTimeout(() => box.classList.add('-translate-x-2'), 180);
+        setTimeout(() => box.classList.remove('-translate-x-2'), 270);
+      }
+    }
+
+    function restartGame() {
+      const modal = document.getElementById('victoryModal');
+      modal.classList.add('opacity-0');
+      modal.firstElementChild.classList.add('scale-95');
+      setTimeout(() => modal.classList.add('hidden'), 200);
+      stopConfetti();
+      initGame();
+    }
+
+    // =================================================================
+    // 6. CONFETTI ENGINE (FOR VICTORY)
+    // =================================================================
+    let confettiAnimationId = null;
+    const confettiCanvas = document.getElementById('confettiCanvas');
+    const confettiCtx = confettiCanvas.getContext('2d');
+    let confettiParticles = [];
+
+    function resizeConfetti() {
+      confettiCanvas.width = window.innerWidth;
+      confettiCanvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeConfetti);
+    resizeConfetti();
+
+    function launchConfetti() {
+      resizeConfetti();
+      confettiParticles = [];
+      const colors = ['#FFC72C', '#38BDF8', '#FB7185', '#34D399', '#18181B'];
+
+      for (let i = 0; i < 120; i++) {
+        confettiParticles.push({
+          x: confettiCanvas.width / 2 + (Math.random() - 0.5) * 300,
+          y: confettiCanvas.height / 2 + (Math.random() - 0.5) * 100,
+          w: Math.random() * 8 + 6,
+          h: Math.random() * 6 + 4,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          vx: (Math.random() - 0.5) * 12,
+          vy: Math.random() * -12 - 4,
+          rotation: Math.random() * 360,
+          vRot: (Math.random() - 0.5) * 10,
+          opacity: 1
+        });
+      }
+
+      function update() {
+        confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+        let alive = 0;
+
+        confettiParticles.forEach(p => {
+          p.x += p.vx;
+          p.y += p.vy;
+          p.vy += 0.35;
+          p.rotation += p.vRot;
+          p.opacity -= 0.005;
+
+          if (p.opacity > 0 && p.y < confettiCanvas.height) {
+            alive++;
+            confettiCtx.save();
+            confettiCtx.globalAlpha = Math.max(0, p.opacity);
+            confettiCtx.translate(p.x, p.y);
+            confettiCtx.rotate((p.rotation * Math.PI) / 180);
+            confettiCtx.fillStyle = p.color;
+            confettiCtx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+            confettiCtx.restore();
+          }
+        });
+
+        if (alive > 0) {
+          confettiAnimationId = requestAnimationFrame(update);
+        } else {
+          confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+        }
+      }
+
+      cancelAnimationFrame(confettiAnimationId);
+      update();
+    }
+
+    function stopConfetti() {
+      cancelAnimationFrame(confettiAnimationId);
+      confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+    }
+
+    window.onload = function() {
+      initGame();
+    };
+  </script>
+</body>
+</html>

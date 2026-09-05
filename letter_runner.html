@@ -1,0 +1,1365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Alef-Bet Runner</title>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@800;900&family=Rubik:wght@700;800;900&family=Varela+Round&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      background-color: #F7F4EA;
+      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+      user-select: none;
+      -webkit-user-select: none;
+      background-image: radial-gradient(#E2DAC7 1.5px, transparent 1.5px);
+      background-size: 24px 24px;
+    }
+
+    .font-hebrew {
+      font-family: 'Rubik', 'Varela Round', sans-serif;
+    }
+
+    /* Chunky tactile buttons */
+    .fun-pill-btn {
+      text-decoration: none;
+      outline: none;
+      border: 3px solid #18181B;
+      box-shadow: 4px 4px 0px #18181B;
+      transition: transform 0.1s ease, box-shadow 0.1s ease;
+    }
+    .fun-pill-btn:hover {
+      transform: translate(-2px, -2px);
+      box-shadow: 6px 6px 0px #18181B;
+    }
+    .fun-pill-btn:active {
+      transform: translate(2px, 2px);
+      box-shadow: 1px 1px 0px #18181B;
+    }
+
+    /* Pulse animation for tunnel prompt */
+    @keyframes tunnelPulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.05); opacity: 0.95; }
+    }
+    .tunnel-alert-anim {
+      animation: tunnelPulse 0.6s infinite ease-in-out;
+    }
+  </style>
+</head>
+<body class="min-h-screen w-full flex flex-col justify-between p-3 sm:p-6 selection:bg-amber-400 selection:text-zinc-950">
+
+  <header class="w-full max-w-4xl mx-auto flex flex-wrap items-center justify-between gap-3 pb-3 border-b-4 border-zinc-950">
+    <div class="flex items-center gap-3">
+      <a href="letters.html" 
+         class="fun-pill-btn px-4 py-2 rounded-2xl bg-white text-zinc-950 font-black text-sm flex items-center gap-1.5 cursor-pointer">
+        <span class="text-base leading-none">&larr;</span>
+        <span>Back</span>
+      </a>
+      <div>
+        <h1 class="text-xl sm:text-2xl font-black text-zinc-950 tracking-tight">
+          Alef-Bet Runner
+        </h1>
+        <p class="text-[11px] font-bold text-zinc-500">Pick the right tunnel • Watch for Dagesh dots</p>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-2">
+      <button onclick="toggleAudio()" class="fun-pill-btn p-2 rounded-2xl bg-white text-zinc-950 cursor-pointer" title="Toggle Sound">
+        <svg id="soundIconOn" class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+        </svg>
+        <svg id="soundIconOff" class="w-5 h-5 hidden text-zinc-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
+        </svg>
+      </button>
+
+      <button onclick="startRunnerGame()" class="fun-pill-btn px-4 py-2 rounded-2xl bg-[#FFC72C] text-zinc-950 font-black text-xs sm:text-sm cursor-pointer">
+        Restart
+      </button>
+    </div>
+  </header>
+
+  <div id="runnerContainer" class="relative w-full max-w-4xl mx-auto aspect-[9/14] sm:aspect-[4/3] max-h-[72vh] my-3 bg-slate-950 border-4 border-zinc-950 rounded-[2.5rem] overflow-hidden shadow-[8px_8px_0px_#18181B] flex items-center justify-center">
+    
+    <canvas id="runnerCanvas" class="w-full h-full block"></canvas>
+
+    <div class="absolute top-3 inset-x-4 flex items-start justify-between pointer-events-none z-10">
+      <div class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-2xl bg-white/95 border-3 border-zinc-950 shadow-[3px_3px_0px_#18181B]">
+        <span class="text-base">🪙</span>
+        <span id="runnerCoinsHud" class="font-mono font-black text-sm text-zinc-950">0</span>
+      </div>
+
+      <div class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-2xl bg-white/95 border-3 border-zinc-950 shadow-[3px_3px_0px_#18181B]">
+        <span class="text-xs font-black text-amber-500">⚡</span>
+        <span id="runnerSpeedHud" class="font-mono font-black text-xs sm:text-sm text-zinc-950">1.0x</span>
+      </div>
+
+      <div class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-2xl bg-white/95 border-3 border-zinc-950 shadow-[3px_3px_0px_#18181B]">
+        <span class="text-[10px] uppercase font-black text-zinc-500">Score:</span>
+        <span id="runnerScoreHud" class="font-mono font-black text-sm text-zinc-950">0</span>
+      </div>
+    </div>
+
+    <div id="tunnelAlertBanner" class="absolute top-14 left-1/2 -translate-x-1/2 w-[92%] max-w-sm pointer-events-none z-20 hidden transition-all duration-200">
+      <div class="tunnel-alert-anim bg-white/95 border-4 border-zinc-950 rounded-2xl px-5 py-2.5 shadow-[6px_6px_0px_#18181B] text-center">
+        <div class="text-[10px] uppercase tracking-widest text-amber-600 font-black">Tunnel Ahead!</div>
+        <div class="text-lg sm:text-xl font-black text-zinc-950 flex items-center justify-center gap-2 mt-0.5">
+          <span>Enter:</span>
+          <span id="tunnelTargetPrompt" class="text-[#B94723] underline underline-offset-4 font-black">Bet</span>
+          <span id="tunnelCountdownNumber" class="text-emerald-600 font-mono text-xl ml-1">5</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="absolute bottom-3 inset-x-3 flex justify-between items-end pointer-events-none z-20">
+      <div class="flex gap-2">
+        <button id="touchLeftBtn" class="pointer-events-auto fun-pill-btn w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-white text-zinc-950 flex items-center justify-center text-xl cursor-pointer">
+          ◀
+        </button>
+        <button id="touchRightBtn" class="pointer-events-auto fun-pill-btn w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-white text-zinc-950 flex items-center justify-center text-xl cursor-pointer">
+          ▶
+        </button>
+      </div>
+
+      <div class="flex gap-2">
+        <button id="touchRollBtn" class="pointer-events-auto fun-pill-btn w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-sky-300 text-zinc-950 flex items-center justify-center text-xs font-black cursor-pointer">
+          ROLL
+        </button>
+        <button id="touchJumpBtn" class="pointer-events-auto fun-pill-btn w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-[#FFC72C] text-zinc-950 flex items-center justify-center text-xs font-black cursor-pointer">
+          JUMP
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <footer class="w-full text-center py-2 text-xs text-zinc-500 font-bold">
+    <kbd class="px-1.5 py-0.5 bg-white rounded border-2 border-zinc-950 text-zinc-950 font-mono">↑ / Space</kbd> Jump &bull; 
+    <kbd class="px-1.5 py-0.5 bg-white rounded border-2 border-zinc-950 text-zinc-950 font-mono">↓ / S</kbd> Roll &bull; 
+    <kbd class="px-1.5 py-0.5 bg-white rounded border-2 border-zinc-950 text-zinc-950 font-mono">← / →</kbd> Steer
+  </footer>
+
+  <div id="runnerGameOverModal" class="fixed inset-0 bg-zinc-950/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden opacity-0 transition-opacity duration-200">
+    <div class="bg-white border-4 border-zinc-950 rounded-[2rem] p-6 sm:p-8 max-w-sm w-full text-center shadow-[8px_8px_0px_#18181B] transform scale-95 transition-transform duration-200">
+      <div class="w-16 h-16 mx-auto rounded-full bg-rose-400 border-4 border-zinc-950 flex items-center justify-center mb-3 shadow-[3px_3px_0px_#18181B]">
+        <span class="text-3xl">💥</span>
+      </div>
+
+      <h2 class="text-2xl font-black text-zinc-950 mb-1">Crash!</h2>
+      <p id="runnerCrashReason" class="text-xs text-zinc-600 font-bold mb-5">You crashed into an obstacle.</p>
+
+      <div class="grid grid-cols-3 gap-2 mb-5 bg-[#F7F4EA] p-3 rounded-2xl border-3 border-zinc-950 text-center">
+        <div>
+          <p class="text-[9px] text-zinc-500 uppercase font-black">Tunnels</p>
+          <p id="runnerTunnelsPassed" class="text-lg font-mono font-black text-emerald-600 mt-0.5">0</p>
+        </div>
+        <div>
+          <p class="text-[9px] text-zinc-500 uppercase font-black">Coins</p>
+          <p id="runnerCoinsCollected" class="text-lg font-mono font-black text-amber-500 mt-0.5">0</p>
+        </div>
+        <div>
+          <p class="text-[9px] text-zinc-500 uppercase font-black">Score</p>
+          <p id="runnerFinalScore" class="text-lg font-mono font-black text-zinc-950 mt-0.5">0</p>
+        </div>
+      </div>
+
+      <div class="flex flex-col gap-2.5">
+        <button onclick="closeRunnerGameOver(); startRunnerGame();" class="fun-pill-btn w-full py-3 rounded-2xl bg-[#FFC72C] text-zinc-950 font-black text-sm cursor-pointer">
+          Run Again
+        </button>
+        <a href="letters.html" class="fun-pill-btn w-full py-2.5 rounded-2xl bg-white text-zinc-950 font-black text-xs cursor-pointer text-center block">
+          Back to Games Menu
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // =================================================================
+    // 1. DATA DEFINITIONS (WITH FULL DAGESH DISTINCTIONS)
+    // =================================================================
+    const ALL_LETTERS = [
+      { id: 'alef', hebrew: 'א', name: 'Alef', dagesh: false },
+      { id: 'bet', hebrew: 'בּ', name: 'Bet', dagesh: true },
+      { id: 'vet', hebrew: 'ב', name: 'Vet', dagesh: false },
+      { id: 'gimel', hebrew: 'ג', name: 'Gimel', dagesh: false },
+      { id: 'dalet', hebrew: 'ד', name: 'Dalet', dagesh: false },
+      { id: 'hei', hebrew: 'ה', name: 'Hei', dagesh: false },
+      { id: 'vav', hebrew: 'ו', name: 'Vav', dagesh: false },
+      { id: 'zayin', hebrew: 'ז', name: 'Zayin', dagesh: false },
+      { id: 'chet', hebrew: 'ח', name: 'Chet', dagesh: false },
+      { id: 'tet', hebrew: 'ט', name: 'Tet', dagesh: false },
+      { id: 'yud', hebrew: 'י', name: 'Yud', dagesh: false },
+      { id: 'kaf', hebrew: 'כּ', name: 'Kaf', dagesh: true },
+      { id: 'chaf', hebrew: 'כ', name: 'Chaf', dagesh: false },
+      { id: 'lamed', hebrew: 'ל', name: 'Lamed', dagesh: false },
+      { id: 'mem', hebrew: 'מ', name: 'Mem', dagesh: false },
+      { id: 'nun', hebrew: 'נ', name: 'Nun', dagesh: false },
+      { id: 'samech', hebrew: 'ס', name: 'Samech', dagesh: false },
+      { id: 'ayin', hebrew: 'ע', name: 'Ayin', dagesh: false },
+      { id: 'pei', hebrew: 'פּ', name: 'Pei', dagesh: true },
+      { id: 'fei', hebrew: 'פ', name: 'Fei', dagesh: false },
+      { id: 'tzadik', hebrew: 'צ', name: 'Tzadik', dagesh: false },
+      { id: 'kuf', hebrew: 'ק', name: 'Kuf', dagesh: false },
+      { id: 'reish', hebrew: 'ר', name: 'Reish', dagesh: false },
+      { id: 'shin', hebrew: 'שׁ', name: 'Shin', dagesh: false },
+      { id: 'sin', hebrew: 'שׂ', name: 'Sin', dagesh: false },
+      { id: 'tav', hebrew: 'תּ', name: 'Tav', dagesh: true }
+    ];
+
+    // =================================================================
+    // 2. AUDIO SYNTHESIS VIA WEB AUDIO API
+    // =================================================================
+    let audioEnabled = true;
+    let audioCtx = null;
+
+    function initAudioContext() {
+      if (!audioCtx) {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (AudioContext) audioCtx = new AudioContext();
+      }
+      if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    }
+
+    function playTone(freq, type = 'sine', duration = 0.15, gainVal = 0.1) {
+      if (!audioEnabled) return;
+      try {
+        initAudioContext();
+        if (!audioCtx) return;
+
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+
+        gain.gain.setValueAtTime(gainVal, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+      } catch (e) {}
+    }
+
+    function soundFlip() { playTone(480, 'sine', 0.08, 0.08); }
+    function soundCoin() {
+      playTone(987.77, 'sine', 0.08, 0.09);
+      setTimeout(() => playTone(1318.51, 'sine', 0.12, 0.09), 60);
+    }
+    function soundLaneSwitch() { playTone(320, 'sine', 0.06, 0.05); }
+    function soundBump() { playTone(160, 'sawtooth', 0.12, 0.08); }
+    function soundJump() { playTone(380, 'sine', 0.12, 0.08); }
+    function soundRoll() { playTone(220, 'triangle', 0.15, 0.07); }
+    function soundTunnelSuccess() {
+      if (!audioEnabled) return;
+      [587.33, 739.99, 880.00, 1174.66].forEach((note, idx) => {
+        setTimeout(() => playTone(note, 'triangle', 0.25, 0.14), idx * 60);
+      });
+    }
+    function soundCrash() {
+      if (!audioEnabled) return;
+      playTone(180, 'sawtooth', 0.25, 0.15);
+      setTimeout(() => playTone(120, 'sawtooth', 0.35, 0.15), 80);
+      setTimeout(() => playTone(75, 'sine', 0.45, 0.2), 160);
+    }
+    function soundBeep() { playTone(720, 'sine', 0.05, 0.06); }
+
+    function toggleAudio() {
+      audioEnabled = !audioEnabled;
+      document.getElementById('soundIconOn').classList.toggle('hidden', !audioEnabled);
+      document.getElementById('soundIconOff').classList.toggle('hidden', audioEnabled);
+      if (audioEnabled) {
+        initAudioContext();
+        soundFlip();
+      }
+    }
+
+    // =================================================================
+    // 3. RUNNER 3D PERSPECTIVE & ENGINE STATE
+    // =================================================================
+    const runnerCanvas = document.getElementById('runnerCanvas');
+    const runnerCtx = runnerCanvas.getContext('2d');
+    let runnerAnimId = null;
+    let runnerActive = false;
+
+    let playerLane = 1; // 0: Left, 1: Center, 2: Right
+    let playerVisualX = 0; // smoothly animates to -1, 0, 1
+    let bumpOffset = 0; // temporary bounce offset when hitting train side
+    let bumpVelocity = 0;
+    let playerY = 0;
+    let playerVy = 0;
+    let isJumping = false;
+    let isRolling = false;
+    let rollTimer = 0;
+    let baseTrackHeight = 0;
+    let isOnTrain = false;
+    let runCycle = 0;
+
+    const BASE_SPEED = 230;
+    const MAX_SPEED = 580;
+    let runnerSpeed = BASE_SPEED;
+    let playerDistance = 0;
+    let runnerScore = 0;
+    let runnerCoins = 0;
+    let tunnelsCleared = 0;
+
+    let obstacles = [];
+    let coinsList = [];
+    let runnerParticles = [];
+    let activeTunnel = null;
+    let nextTunnelDistance = 950;
+    let nextObstacleDistance = 350;
+    let lastTime = 0;
+    let lastAnnouncedCountdown = -1;
+
+    let horizonY = 0;
+    let bottomY = 0;
+    const CAMERA_DEPTH = 320;
+    const CAMERA_OFFSET_Z = 28;
+
+    function resizeRunnerCanvas() {
+      const container = document.getElementById('runnerContainer');
+      if (!container) return;
+      const rect = container.getBoundingClientRect();
+      runnerCanvas.width = rect.width;
+      runnerCanvas.height = rect.height;
+      horizonY = runnerCanvas.height * 0.28;
+      bottomY = runnerCanvas.height * 0.94;
+    }
+    window.addEventListener('resize', resizeRunnerCanvas);
+
+    function project3D(xLane, zWorld, yOffset = 0) {
+      const zCam = (zWorld - playerDistance) + CAMERA_OFFSET_Z;
+      if (zCam <= 1.0) return null;
+      const scale = CAMERA_DEPTH / (zCam + CAMERA_DEPTH);
+      const screenY = horizonY + (bottomY - horizonY) * Math.pow(scale, 1.25) - yOffset * scale;
+      const trackBaseWidth = runnerCanvas.width * 0.88;
+      const laneSpacing = (trackBaseWidth / 3) * scale;
+      const screenX = runnerCanvas.width / 2 + xLane * laneSpacing;
+      return { x: screenX, y: screenY, scale: scale, zCam: zCam };
+    }
+
+    function startRunnerGame() {
+      resizeRunnerCanvas();
+      runnerActive = true;
+      playerLane = 1;
+      playerVisualX = 0;
+      bumpOffset = 0;
+      bumpVelocity = 0;
+      playerY = 0;
+      playerVy = 0;
+      isJumping = false;
+      isRolling = false;
+      rollTimer = 0;
+      baseTrackHeight = 0;
+      isOnTrain = false;
+      runCycle = 0;
+
+      runnerSpeed = BASE_SPEED;
+      playerDistance = 0;
+      runnerScore = 0;
+      runnerCoins = 0;
+      tunnelsCleared = 0;
+
+      obstacles = [];
+      coinsList = [];
+      runnerParticles = [];
+      activeTunnel = null;
+      nextObstacleDistance = 350;
+      nextTunnelDistance = 950;
+      lastAnnouncedCountdown = -1;
+
+      document.getElementById('runnerScoreHud').textContent = '0';
+      document.getElementById('runnerCoinsHud').textContent = '0';
+      document.getElementById('runnerSpeedHud').textContent = '1.0x';
+      document.getElementById('tunnelAlertBanner').classList.add('hidden');
+      closeRunnerGameOver();
+
+      lastTime = performance.now();
+      cancelAnimationFrame(runnerAnimId);
+      runnerAnimId = requestAnimationFrame(runnerGameLoop);
+    }
+
+    function stopRunnerGame() {
+      runnerActive = false;
+      cancelAnimationFrame(runnerAnimId);
+      document.getElementById('tunnelAlertBanner').classList.add('hidden');
+    }
+
+    function spawnObstacleCluster(zPos) {
+      if (activeTunnel) {
+        const tunnelZ = activeTunnel.z;
+        if (zPos >= tunnelZ - 450 && zPos <= tunnelZ + 550) {
+          nextObstacleDistance = tunnelZ + 550;
+          return;
+        }
+      }
+
+      const lanes = [-1, 0, 1];
+      const primaryLane = lanes[Math.floor(Math.random() * lanes.length)];
+      const randType = Math.random();
+
+      if (randType < 0.38) {
+        const trainLength = 340;
+        obstacles.push({
+          type: 'train',
+          lane: primaryLane,
+          z: zPos,
+          length: trainLength,
+          height: 52,
+          hasRamp: true
+        });
+
+        coinsList.push({ lane: primaryLane, z: zPos + 22, y: 28, collected: false });
+        coinsList.push({ lane: primaryLane, z: zPos + 55, y: 62, collected: false });
+        for (let i = 1; i <= 6; i++) {
+          coinsList.push({ lane: primaryLane, z: zPos + 55 + i * 42, y: 62, collected: false });
+        }
+        nextObstacleDistance = zPos + trainLength + 340 + Math.random() * 160;
+      } else if (randType < 0.70) {
+        obstacles.push({ type: 'hurdle', lane: primaryLane, z: zPos, height: 28 });
+        coinsList.push({ lane: primaryLane, z: zPos, y: 46, collected: false });
+        nextObstacleDistance = zPos + 260 + Math.random() * 180;
+      } else {
+        obstacles.push({ type: 'high_barrier', lane: primaryLane, z: zPos, height: 72, bottomClearance: 32 });
+        coinsList.push({ lane: primaryLane, z: zPos, y: 8, collected: false });
+        nextObstacleDistance = zPos + 260 + Math.random() * 180;
+      }
+
+      const alternateLane = lanes.find(l => l !== primaryLane);
+      if (Math.random() > 0.35) {
+        for (let j = 0; j < 3; j++) {
+          coinsList.push({ lane: alternateLane, z: zPos + j * 40, y: 16, collected: false });
+        }
+      }
+    }
+
+    function scheduleTunnel() {
+      const target = ALL_LETTERS[Math.floor(Math.random() * ALL_LETTERS.length)];
+      const distractors = [];
+      while (distractors.length < 2) {
+        const d = ALL_LETTERS[Math.floor(Math.random() * ALL_LETTERS.length)];
+        if (d.id !== target.id && !distractors.some(x => x.id === d.id)) {
+          distractors.push(d);
+        }
+      }
+
+      const options = [target, distractors[0], distractors[1]];
+      for (let i = options.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [options[i], options[j]] = [options[j], options[i]];
+      }
+
+      const correctLaneIndex = options.findIndex(o => o.id === target.id);
+      const correctLaneVal = correctLaneIndex - 1;
+      const approachDistance = 1450;
+
+      activeTunnel = {
+        spawnZ: playerDistance,
+        z: playerDistance + approachDistance,
+        approachDistance: approachDistance,
+        target: target,
+        options: options,
+        correctLane: correctLaneVal,
+        active: true
+      };
+
+      // Explicitly show ONLY the English name, without Hebrew in parentheses
+      const targetEl = document.getElementById('tunnelTargetPrompt');
+      if (targetEl) targetEl.textContent = target.name;
+      const countEl = document.getElementById('tunnelCountdownNumber');
+      if (countEl) countEl.textContent = '5';
+      const bannerEl = document.getElementById('tunnelAlertBanner');
+      if (bannerEl) bannerEl.classList.remove('hidden');
+      lastAnnouncedCountdown = 5;
+    }
+
+    function runnerGameLoop(timestamp) {
+      if (!runnerActive) return;
+      const dt = Math.min((timestamp - lastTime) / 1000, 0.08);
+      lastTime = timestamp;
+      updateRunner(dt);
+      drawRunner();
+      runnerAnimId = requestAnimationFrame(runnerGameLoop);
+    }
+
+    function updateRunner(dt) {
+      const speedMultiplier = 1 + Math.min(1.5, (playerDistance * 0.00008) + (tunnelsCleared * 0.08));
+      runnerSpeed = Math.min(MAX_SPEED, BASE_SPEED * speedMultiplier);
+      document.getElementById('runnerSpeedHud').textContent = (runnerSpeed / BASE_SPEED).toFixed(1) + 'x';
+
+      playerDistance += runnerSpeed * dt;
+      runnerScore += Math.round(runnerSpeed * dt * 0.12);
+      document.getElementById('runnerScoreHud').textContent = runnerScore;
+
+      // Smooth horizontal interpolation
+      const targetX = playerLane - 1;
+      playerVisualX += (targetX - playerVisualX) * Math.min(1, 16 * dt);
+
+      // Spring physics for side train bounce
+      bumpOffset += bumpVelocity * dt;
+      bumpVelocity -= bumpOffset * 350 * dt;
+      bumpVelocity *= Math.pow(0.005, dt);
+
+      if (isRolling) {
+        rollTimer -= dt;
+        if (rollTimer <= 0) isRolling = false;
+      }
+
+      let targetBaseHeight = 0;
+      isOnTrain = false;
+
+      obstacles.forEach(obs => {
+        if (obs.type === 'train') {
+          const inZRange = playerDistance >= obs.z && playerDistance <= (obs.z + obs.length);
+          const inLane = Math.abs(playerVisualX - obs.lane) < 0.48;
+          if (inZRange && inLane) {
+            isOnTrain = true;
+            const rampProgress = Math.min(1, (playerDistance - obs.z) / 45);
+            targetBaseHeight = obs.height * rampProgress;
+          }
+        }
+      });
+
+      if (isOnTrain) {
+        baseTrackHeight = targetBaseHeight;
+        if (!isJumping) playerY = baseTrackHeight;
+      } else {
+        baseTrackHeight = 0;
+      }
+
+      runCycle += dt * (runnerSpeed / 18);
+      if (isJumping || playerY > baseTrackHeight) {
+        playerY += playerVy * dt;
+        playerVy -= 920 * dt;
+        if (playerY <= baseTrackHeight) {
+          playerY = baseTrackHeight;
+          playerVy = 0;
+          isJumping = false;
+        }
+      } else {
+        playerY = baseTrackHeight;
+        playerVy = 0;
+      }
+
+      if (playerDistance + 1200 > nextObstacleDistance) {
+        spawnObstacleCluster(nextObstacleDistance);
+      }
+
+      // Check obstacle collisions (Hurdle and Overhead sign)
+      for (let i = 0; i < obstacles.length; i++) {
+        const obs = obstacles[i];
+        const dz = obs.z - playerDistance;
+        const sameLane = Math.abs(playerVisualX - obs.lane) < 0.44;
+
+        if (sameLane) {
+          if (obs.type === 'hurdle' && dz > -15 && dz < 20 && playerY < 24) {
+            handleRunnerCrash('Hit a roadblock! You need to JUMP (↑) over it.');
+            return;
+          } else if (obs.type === 'high_barrier' && dz > -16 && dz < 20 && !isRolling && playerY < 48) {
+            handleRunnerCrash('Struck an overhead rail sign! You need to ROLL (↓) under it.');
+            return;
+          } else if (obs.type === 'train' && (dz > -10 && dz < 18) && playerY < 32 && !isOnTrain) {
+            handleRunnerCrash('Head-on collision with a Subway train!');
+            return;
+          }
+        }
+      }
+
+      obstacles = obstacles.filter(obs => {
+        const endZ = obs.type === 'train' ? obs.z + obs.length : obs.z;
+        return endZ > playerDistance - 100;
+      });
+
+      coinsList.forEach(c => {
+        if (!c.collected) {
+          const dz = c.z - playerDistance;
+          if (dz < 28 && dz > -18) {
+            const laneDiff = Math.abs(playerVisualX - c.lane);
+            const heightDiff = Math.abs(playerY - (c.y || 16));
+            if (laneDiff < 0.46 && heightDiff < 34) {
+              c.collected = true;
+              runnerCoins++;
+              runnerScore += 50;
+              document.getElementById('runnerCoinsHud').textContent = runnerCoins;
+              soundCoin();
+
+              const p = project3D(c.lane, c.z, c.y || 16);
+              if (p) {
+                for (let i = 0; i < 6; i++) {
+                  runnerParticles.push({
+                    x: p.x, y: p.y,
+                    vx: (Math.random() - 0.5) * 140, vy: (Math.random() - 0.5) * 140,
+                    color: '#FFC72C', life: 0.35, maxLife: 0.35
+                  });
+                }
+              }
+            }
+          }
+        }
+      });
+      coinsList = coinsList.filter(c => c.z > playerDistance - 40 && !c.collected);
+
+      if (!activeTunnel && playerDistance >= nextTunnelDistance) {
+        scheduleTunnel();
+      }
+
+      if (activeTunnel) {
+        const distToTunnel = activeTunnel.z - playerDistance;
+        const fractionRemaining = Math.max(0, distToTunnel / activeTunnel.approachDistance);
+        const currentCount = Math.max(1, Math.min(5, Math.ceil(fractionRemaining * 5)));
+
+        const countEl = document.getElementById('tunnelCountdownNumber');
+        if (currentCount !== lastAnnouncedCountdown) {
+          soundBeep();
+          lastAnnouncedCountdown = currentCount;
+        }
+        if (countEl) countEl.textContent = currentCount;
+
+        if (distToTunnel <= 8) {
+          document.getElementById('tunnelAlertBanner').classList.add('hidden');
+          const currentRoundedLane = Math.round(playerVisualX);
+
+          if (currentRoundedLane === activeTunnel.correctLane) {
+            soundTunnelSuccess();
+            tunnelsCleared++;
+            runnerScore += 750;
+
+            for (let i = 0; i < 30; i++) {
+              runnerParticles.push({
+                x: runnerCanvas.width / 2 + (Math.random() - 0.5) * 220,
+                y: runnerCanvas.height * 0.5 + (Math.random() - 0.5) * 120,
+                vx: (Math.random() - 0.5) * 350, vy: (Math.random() - 0.5) * 350,
+                color: '#34D399', life: 0.65, maxLife: 0.65
+              });
+            }
+
+            nextObstacleDistance = Math.max(nextObstacleDistance, playerDistance + 550);
+            obstacles = obstacles.filter(obs => obs.z > playerDistance + 500 || obs.z < playerDistance - 50);
+
+            for (let cIdx = 0; cIdx < 6; cIdx++) {
+              coinsList.push({
+                lane: currentRoundedLane,
+                z: playerDistance + 120 + cIdx * 45,
+                y: 16,
+                collected: false
+              });
+            }
+
+            nextTunnelDistance = playerDistance + 1600 + Math.random() * 400;
+            activeTunnel = null;
+            lastAnnouncedCountdown = -1;
+          } else {
+            const enteredOption = activeTunnel.options[currentRoundedLane + 1];
+            const correctOption = activeTunnel.target;
+            let reason = `Target was ${correctOption.name}. `;
+            if (enteredOption) {
+              reason += `You entered tunnel ${enteredOption.name}!`;
+            } else {
+              reason += `You crashed off the tracks!`;
+            }
+            handleRunnerCrash(reason);
+            return;
+          }
+        }
+      }
+
+      runnerParticles.forEach(p => {
+        p.x += p.vx * dt;
+        p.y += p.vy * dt;
+        p.life -= dt;
+      });
+      runnerParticles = runnerParticles.filter(p => p.life > 0);
+    }
+
+    function handleRunnerCrash(reasonText) {
+      soundCrash();
+      stopRunnerGame();
+
+      document.getElementById('runnerCrashReason').textContent = reasonText;
+      document.getElementById('runnerTunnelsPassed').textContent = tunnelsCleared;
+      document.getElementById('runnerCoinsCollected').textContent = runnerCoins;
+      document.getElementById('runnerFinalScore').textContent = runnerScore;
+
+      const modal = document.getElementById('runnerGameOverModal');
+      modal.classList.remove('hidden');
+      setTimeout(() => {
+        modal.classList.remove('opacity-0');
+        modal.firstElementChild.classList.remove('scale-95');
+      }, 30);
+    }
+
+    function closeRunnerGameOver() {
+      const modal = document.getElementById('runnerGameOverModal');
+      modal.classList.add('opacity-0');
+      modal.firstElementChild.classList.add('scale-95');
+      setTimeout(() => modal.classList.add('hidden'), 200);
+    }
+
+    // =================================================================
+    // 4. DRAWING & RENDERING (3D SCENE)
+    // =================================================================
+    function drawRunner() {
+      const w = runnerCanvas.width;
+      const h = runnerCanvas.height;
+
+      // Sky & Horizon
+      const skyGrad = runnerCtx.createLinearGradient(0, 0, 0, horizonY);
+      skyGrad.addColorStop(0, '#020617');
+      skyGrad.addColorStop(0.7, '#0b1329');
+      skyGrad.addColorStop(1, '#1e293b');
+      runnerCtx.fillStyle = skyGrad;
+      runnerCtx.fillRect(0, 0, w, horizonY);
+
+      // Distant City Skyline
+      runnerCtx.fillStyle = '#0f172a';
+      const cityBldgs = [
+        { x: 0.02, w: 0.12, h: 42 }, { x: 0.16, w: 0.08, h: 65 }, { x: 0.26, w: 0.14, h: 35 },
+        { x: 0.42, w: 0.16, h: 55 }, { x: 0.60, w: 0.10, h: 72 }, { x: 0.72, w: 0.13, h: 48 },
+        { x: 0.87, w: 0.11, h: 60 }
+      ];
+      cityBldgs.forEach(b => {
+        runnerCtx.fillRect(w * b.x, horizonY - b.h, w * b.w, b.h);
+        runnerCtx.fillStyle = 'rgba(255, 199, 44, 0.45)';
+        for (let row = 0; row < 3; row++) {
+          for (let col = 0; col < 2; col++) {
+            if ((b.h + row + col) % 2 === 0) {
+              runnerCtx.fillRect(w * b.x + 4 + col * 10, horizonY - b.h + 8 + row * 12, 4, 6);
+            }
+          }
+        }
+        runnerCtx.fillStyle = '#0f172a';
+      });
+
+      // Ground Ballast
+      const groundGrad = runnerCtx.createLinearGradient(0, horizonY, 0, h);
+      groundGrad.addColorStop(0, '#131b2e');
+      groundGrad.addColorStop(0.3, '#0b1120');
+      groundGrad.addColorStop(1, '#030712');
+      runnerCtx.fillStyle = groundGrad;
+      runnerCtx.fillRect(0, horizonY, w, h - horizonY);
+
+      // Catenary Gantries
+      for (let z = 900; z >= 80; z -= 260) {
+        const catWorldZ = playerDistance + z - (playerDistance % 260);
+        const pLeft = project3D(-1.75, catWorldZ, 120);
+        const pRight = project3D(1.75, catWorldZ, 120);
+        const pBaseL = project3D(-1.75, catWorldZ, 0);
+        const pBaseR = project3D(1.75, catWorldZ, 0);
+
+        if (pLeft && pRight && pBaseL && pBaseR) {
+          runnerCtx.strokeStyle = 'rgba(71, 85, 105, ' + (0.15 + pLeft.scale * 0.4) + ')';
+          runnerCtx.lineWidth = Math.max(1, 2 * pLeft.scale);
+          runnerCtx.beginPath();
+          runnerCtx.moveTo(pBaseL.x, pBaseL.y);
+          runnerCtx.lineTo(pLeft.x, pLeft.y);
+          runnerCtx.moveTo(pBaseR.x, pBaseR.y);
+          runnerCtx.lineTo(pRight.x, pRight.y);
+          runnerCtx.lineTo(pLeft.x, pLeft.y);
+          runnerCtx.stroke();
+        }
+      }
+
+      // Railway Ties
+      const sleeperSpacing = 36;
+      const offsetZ = (playerDistance % sleeperSpacing);
+      for (let z = 950; z >= 12; z -= sleeperSpacing) {
+        const actualWorldZ = playerDistance + (z - offsetZ);
+        const leftP = project3D(-1.65, actualWorldZ, 0);
+        const rightP = project3D(1.65, actualWorldZ, 0);
+
+        if (leftP && rightP) {
+          const tieHeight = Math.max(2, 6.5 * leftP.scale);
+          runnerCtx.fillStyle = '#1e293b';
+          runnerCtx.fillRect(leftP.x, leftP.y - tieHeight, rightP.x - leftP.x, tieHeight);
+          runnerCtx.fillStyle = '#334155';
+          runnerCtx.fillRect(leftP.x, leftP.y - tieHeight, rightP.x - leftP.x, Math.max(1, tieHeight * 0.35));
+        }
+      }
+
+      // Metallic Rails
+      const railPositions = [-1.5, -0.5, 0.5, 1.5];
+      railPositions.forEach(rp => {
+        const farP = project3D(rp, playerDistance + 1000, 0);
+        const nearP = project3D(rp, playerDistance + 2, 0);
+
+        if (farP && nearP) {
+          runnerCtx.strokeStyle = 'rgba(255, 199, 44, 0.45)';
+          runnerCtx.lineWidth = 1.5;
+          runnerCtx.beginPath();
+          runnerCtx.moveTo(farP.x, farP.y);
+          runnerCtx.lineTo(nearP.x, nearP.y);
+          runnerCtx.stroke();
+
+          runnerCtx.strokeStyle = '#e2e8f0';
+          runnerCtx.lineWidth = 3;
+          runnerCtx.beginPath();
+          runnerCtx.moveTo(farP.x, farP.y - 1.5);
+          runnerCtx.lineTo(nearP.x, nearP.y - 1.5);
+          runnerCtx.stroke();
+        }
+      });
+
+      // Tunnels
+      if (activeTunnel) {
+        const dz = activeTunnel.z - playerDistance;
+        if (dz > 0 && dz < 1350) {
+          drawTunnelArchways(activeTunnel.z);
+        }
+      }
+
+      // Depth-Sorted Obstacles & Coins
+      const renderList = [];
+      obstacles.forEach(obs => {
+        const endZ = obs.type === 'train' ? obs.z + obs.length : obs.z;
+        if (endZ > playerDistance - 60 && obs.z < playerDistance + 1100) {
+          renderList.push({ type: 'obstacle', sortZ: obs.z, data: obs });
+        }
+      });
+
+      coinsList.forEach(c => {
+        const isTrainCoin = (c.y && c.y > 20 && obstacles.some(o => o.type === 'train' && o.lane === c.lane && c.z >= o.z && c.z <= o.z + o.length));
+        if (!isTrainCoin && !c.collected && c.z > playerDistance - 20 && c.z < playerDistance + 950) {
+          renderList.push({ type: 'coin', sortZ: c.z, data: c });
+        }
+      });
+
+      renderList.sort((a, b) => b.sortZ - a.sortZ);
+
+      renderList.forEach(item => {
+        if (item.type === 'obstacle') {
+          drawObstacle3D(item.data);
+        } else {
+          draw3DCoin(item.data.lane, item.data.z, item.data.y || 16);
+        }
+      });
+
+      drawSubwaySurferCharacter();
+
+      runnerParticles.forEach(p => {
+        runnerCtx.fillStyle = p.color;
+        runnerCtx.globalAlpha = Math.max(0, p.life / p.maxLife);
+        runnerCtx.beginPath();
+        runnerCtx.arc(p.x, p.y, 4, 0, Math.PI * 2);
+        runnerCtx.fill();
+        runnerCtx.globalAlpha = 1;
+      });
+    }
+
+    function drawObstacle3D(obs) {
+      if (obs.type === 'train') {
+        const startZ = obs.z;
+        const endZ = obs.z + obs.length;
+        const pFront = project3D(obs.lane, startZ, 0);
+        const pBack = project3D(obs.lane, endZ, 0);
+        if (!pFront && !pBack) return;
+
+        const safeFront = pFront || project3D(obs.lane, playerDistance - CAMERA_OFFSET_Z + 1.5, 0);
+        const safeBack = pBack || project3D(obs.lane, playerDistance + 800, 0);
+        if (!safeFront || !safeBack) return;
+
+        const trainWFront = 62 * safeFront.scale;
+        const trainHFront = obs.height * safeFront.scale;
+        const trainWBack = 62 * safeBack.scale;
+        const trainHBack = obs.height * safeBack.scale;
+
+        // Roof
+        const roofGrad = runnerCtx.createLinearGradient(0, safeFront.y - trainHFront, 0, safeBack.y - trainHBack);
+        roofGrad.addColorStop(0, '#1e3a8a');
+        roofGrad.addColorStop(1, '#0f172a');
+        runnerCtx.fillStyle = roofGrad;
+        runnerCtx.beginPath();
+        runnerCtx.moveTo(safeFront.x - trainWFront / 2 * 0.92, safeFront.y - trainHFront);
+        runnerCtx.lineTo(safeFront.x + trainWFront / 2 * 0.92, safeFront.y - trainHFront);
+        runnerCtx.lineTo(safeBack.x + trainWBack / 2 * 0.92, safeBack.y - trainHBack);
+        runnerCtx.lineTo(safeBack.x - trainWBack / 2 * 0.92, safeBack.y - trainHBack);
+        runnerCtx.closePath();
+        runnerCtx.fill();
+
+        runnerCtx.strokeStyle = '#38bdf8';
+        runnerCtx.lineWidth = Math.max(1, 2 * safeFront.scale);
+        runnerCtx.beginPath();
+        runnerCtx.moveTo(safeFront.x, safeFront.y - trainHFront);
+        runnerCtx.lineTo(safeBack.x, safeBack.y - trainHBack);
+        runnerCtx.stroke();
+
+        // Front Ramp
+        if (pFront) {
+          const rampGrad = runnerCtx.createLinearGradient(0, pFront.y, 0, pFront.y - trainHFront);
+          rampGrad.addColorStop(0, '#ea580c');
+          rampGrad.addColorStop(1, '#f97316');
+          runnerCtx.fillStyle = rampGrad;
+          runnerCtx.beginPath();
+          runnerCtx.moveTo(pFront.x - trainWFront / 2, pFront.y);
+          runnerCtx.lineTo(pFront.x + trainWFront / 2, pFront.y);
+          runnerCtx.lineTo(pFront.x + trainWFront / 2 * 0.92, pFront.y - trainHFront);
+          runnerCtx.lineTo(pFront.x - trainWFront / 2 * 0.92, pFront.y - trainHFront);
+          runnerCtx.closePath();
+          runnerCtx.fill();
+
+          runnerCtx.fillStyle = '#0f172a';
+          for (let stripe = 1; stripe <= 3; stripe++) {
+            const sy = pFront.y - (trainHFront * (stripe / 4));
+            const sw = trainWFront * 0.7 * (1 - (stripe * 0.08));
+            runnerCtx.fillRect(pFront.x - sw / 2, sy, sw, 3 * pFront.scale);
+          }
+
+          runnerCtx.fillStyle = '#fef08a';
+          runnerCtx.beginPath();
+          runnerCtx.arc(pFront.x - trainWFront * 0.35, pFront.y - 8 * pFront.scale, 3.5 * pFront.scale, 0, Math.PI * 2);
+          runnerCtx.arc(pFront.x + trainWFront * 0.35, pFront.y - 8 * pFront.scale, 3.5 * pFront.scale, 0, Math.PI * 2);
+          runnerCtx.fill();
+        }
+
+        // Flanks
+        const isRightFacing = safeFront.x <= runnerCanvas.width / 2;
+        const flankSign = isRightFacing ? 1 : -1;
+
+        runnerCtx.fillStyle = '#1e293b';
+        runnerCtx.beginPath();
+        runnerCtx.moveTo(safeFront.x + (trainWFront / 2) * flankSign, safeFront.y);
+        runnerCtx.lineTo(safeBack.x + (trainWBack / 2) * flankSign, safeBack.y);
+        runnerCtx.lineTo(safeBack.x + (trainWBack / 2 * 0.92) * flankSign, safeBack.y - trainHBack);
+        runnerCtx.lineTo(safeFront.x + (trainWFront / 2 * 0.92) * flankSign, safeFront.y - trainHFront);
+        runnerCtx.closePath();
+        runnerCtx.fill();
+
+        runnerCtx.fillStyle = '#fef08a';
+        for (let wIdx = 1; wIdx <= 4; wIdx++) {
+          const wz = startZ + (obs.length * (wIdx / 5));
+          const pWin = project3D(obs.lane, wz, 0);
+          if (pWin) {
+            const winW = 10 * pWin.scale;
+            const winH = 12 * pWin.scale;
+            const winX = pWin.x + (30 * pWin.scale * flankSign);
+            const winY = pWin.y - 32 * pWin.scale;
+            runnerCtx.fillRect(winX, winY, winW, winH);
+          }
+        }
+
+        coinsList.forEach(c => {
+          if (!c.collected && c.lane === obs.lane && c.z >= obs.z && c.z <= obs.z + obs.length && c.y > 20) {
+            draw3DCoin(c.lane, c.z, c.y);
+          }
+        });
+
+      } else if (obs.type === 'hurdle') {
+        const p = project3D(obs.lane, obs.z, 0);
+        if (!p) return;
+
+        const w = 56 * p.scale;
+        const h = obs.height * p.scale;
+
+        runnerCtx.fillStyle = '#334155';
+        runnerCtx.beginPath();
+        runnerCtx.moveTo(p.x - w / 2, p.y);
+        runnerCtx.lineTo(p.x - w / 2 + 6 * p.scale, p.y - h);
+        runnerCtx.lineTo(p.x - w / 2 + 10 * p.scale, p.y);
+        runnerCtx.fill();
+
+        runnerCtx.beginPath();
+        runnerCtx.moveTo(p.x + w / 2 - 10 * p.scale, p.y);
+        runnerCtx.lineTo(p.x + w / 2 - 6 * p.scale, p.y - h);
+        runnerCtx.lineTo(p.x + w / 2, p.y);
+        runnerCtx.fill();
+
+        const beamY = p.y - h;
+        const beamH = 16 * p.scale;
+        runnerCtx.fillStyle = '#f97316';
+        runnerCtx.fillRect(p.x - w / 2, beamY, w, beamH);
+
+        runnerCtx.fillStyle = '#ffffff';
+        for (let i = 0; i < 4; i++) {
+          runnerCtx.fillRect(p.x - w / 2 + (i * 14 + 4) * p.scale, beamY, 6 * p.scale, beamH);
+        }
+
+        const beaconPulse = Math.sin(Date.now() * 0.015) > 0 ? '#fbbf24' : '#b45309';
+        runnerCtx.fillStyle = beaconPulse;
+        runnerCtx.beginPath();
+        runnerCtx.arc(p.x - w / 2 + 4 * p.scale, beamY - 4 * p.scale, 3.5 * p.scale, 0, Math.PI * 2);
+        runnerCtx.arc(p.x + w / 2 - 4 * p.scale, beamY - 4 * p.scale, 3.5 * p.scale, 0, Math.PI * 2);
+        runnerCtx.fill();
+
+      } else if (obs.type === 'high_barrier') {
+        const p = project3D(obs.lane, obs.z, 0);
+        if (!p) return;
+
+        const w = 68 * p.scale;
+        const gantryH = obs.height * p.scale;
+        const clearanceH = obs.bottomClearance * p.scale;
+        const topY = p.y - gantryH;
+        const beamH = gantryH - clearanceH;
+
+        runnerCtx.fillStyle = '#475569';
+        runnerCtx.fillRect(p.x - w / 2, topY, 4 * p.scale, gantryH);
+        runnerCtx.fillRect(p.x + w / 2 - 4 * p.scale, topY, 4 * p.scale, gantryH);
+
+        runnerCtx.fillStyle = '#1e293b';
+        runnerCtx.fillRect(p.x - w / 2 - 2 * p.scale, p.y - 6 * p.scale, 8 * p.scale, 6 * p.scale);
+        runnerCtx.fillRect(p.x + w / 2 - 6 * p.scale, p.y - 6 * p.scale, 8 * p.scale, 6 * p.scale);
+
+        runnerCtx.fillStyle = '#0f172a';
+        runnerCtx.fillRect(p.x - w / 2, topY, w, beamH);
+
+        runnerCtx.strokeStyle = '#f59e0b';
+        runnerCtx.lineWidth = Math.max(1, 2 * p.scale);
+        runnerCtx.strokeRect(p.x - w / 2, topY, w, beamH);
+
+        runnerCtx.fillStyle = '#f59e0b';
+        for (let s = 0; s < 5; s++) {
+          runnerCtx.fillRect(p.x - w / 2 + (s * 13 + 3) * p.scale, topY + 2 * p.scale, 6 * p.scale, beamH - 4 * p.scale);
+        }
+
+        const plateW = 38 * p.scale;
+        const plateH = 7 * p.scale;
+        runnerCtx.fillStyle = '#dc2626';
+        runnerCtx.fillRect(p.x - plateW / 2, topY + beamH, plateW, plateH);
+        runnerCtx.fillStyle = '#ffffff';
+        runnerCtx.font = `bold ${Math.max(6, Math.round(6.5 * p.scale))}px sans-serif`;
+        runnerCtx.textAlign = 'center';
+        runnerCtx.textBaseline = 'middle';
+        runnerCtx.fillText('▼ DUCK ▼', p.x, topY + beamH + plateH / 2);
+      }
+    }
+
+    function drawTunnelArchways(tunnelWorldZ) {
+      const pCenter = project3D(0, tunnelWorldZ, 0);
+      if (!pCenter) return;
+
+      const scale = pCenter.scale;
+      const portalHeight = 165 * scale;
+      const totalWidth = (runnerCanvas.width * 0.96) * scale;
+      const tunnelWidth = totalWidth / 3;
+
+      const leftP = project3D(-1.65, tunnelWorldZ, 0);
+      const rightP = project3D(1.65, tunnelWorldZ, 0);
+      if (!leftP || !rightP) return;
+
+      const leftEdge = leftP.x;
+      const rightEdge = rightP.x;
+
+      runnerCtx.fillStyle = '#1e293b';
+      runnerCtx.fillRect(leftEdge, pCenter.y - portalHeight - 48 * scale, rightEdge - leftEdge, 52 * scale);
+      runnerCtx.strokeStyle = '#475569';
+      runnerCtx.lineWidth = Math.max(1, 3 * scale);
+      runnerCtx.strokeRect(leftEdge, pCenter.y - portalHeight - 48 * scale, rightEdge - leftEdge, 52 * scale);
+
+      const stripeCount = 14;
+      const stripeW = (rightEdge - leftEdge) / stripeCount;
+      for (let s = 0; s < stripeCount; s += 2) {
+        runnerCtx.fillStyle = '#f59e0b';
+        runnerCtx.fillRect(leftEdge + s * stripeW, pCenter.y - portalHeight - 12 * scale, stripeW, 10 * scale);
+      }
+
+      const lanes = [-1, 0, 1];
+      lanes.forEach((laneVal, idx) => {
+        const pLane = project3D(laneVal, tunnelWorldZ, 0);
+        if (!pLane) return;
+
+        const mouthW = tunnelWidth * 0.88;
+        const mouthX = pLane.x - mouthW / 2;
+        const mouthY = pLane.y - portalHeight;
+
+        runnerCtx.fillStyle = '#020617';
+        runnerCtx.beginPath();
+        runnerCtx.roundRect(mouthX, mouthY, mouthW, portalHeight, [16 * scale, 16 * scale, 0, 0]);
+        runnerCtx.fill();
+
+        runnerCtx.strokeStyle = '#64748b';
+        runnerCtx.lineWidth = Math.max(1.5, 4 * scale);
+        runnerCtx.stroke();
+
+        const signW = mouthW * 0.86;
+        const signH = 46 * scale;
+        const signX = pLane.x - signW / 2;
+        const signY = mouthY - signH - 6 * scale;
+
+        runnerCtx.fillStyle = '#0f172a';
+        runnerCtx.beginPath();
+        runnerCtx.roundRect(signX, signY, signW, signH, 6 * scale);
+        runnerCtx.fill();
+
+        runnerCtx.strokeStyle = '#d97706';
+        runnerCtx.lineWidth = Math.max(1, 2 * scale);
+        runnerCtx.stroke();
+
+        const letterObj = activeTunnel.options[idx];
+        if (letterObj) {
+          runnerCtx.font = `bold ${Math.max(16, Math.round(38 * scale))}px 'Rubik', 'Varela Round', sans-serif`;
+          runnerCtx.fillStyle = '#FFC72C';
+          runnerCtx.textAlign = 'center';
+          runnerCtx.textBaseline = 'middle';
+          runnerCtx.fillText(letterObj.hebrew, pLane.x, signY + signH / 2);
+        }
+      });
+    }
+
+    function draw3DCoin(lane, worldZ, yOffset = 16) {
+      const p = project3D(lane, worldZ, yOffset);
+      if (!p) return;
+
+      const radius = Math.max(2.5, 14 * p.scale);
+      const wobble = Math.sin(Date.now() * 0.007 + worldZ * 0.05);
+
+      runnerCtx.save();
+      runnerCtx.translate(p.x, p.y);
+      runnerCtx.scale(Math.abs(wobble) * 0.85 + 0.15, 1);
+
+      runnerCtx.fillStyle = '#d97706';
+      runnerCtx.beginPath();
+      runnerCtx.arc(0, 0, radius, 0, Math.PI * 2);
+      runnerCtx.fill();
+
+      runnerCtx.fillStyle = '#f59e0b';
+      runnerCtx.beginPath();
+      runnerCtx.arc(0, 0, radius * 0.85, 0, Math.PI * 2);
+      runnerCtx.fill();
+
+      runnerCtx.fillStyle = '#fef08a';
+      runnerCtx.beginPath();
+      runnerCtx.arc(0, 0, radius * 0.55, 0, Math.PI * 2);
+      runnerCtx.fill();
+
+      runnerCtx.fillStyle = '#ffffff';
+      runnerCtx.fillRect(-1.5 * p.scale, -radius * 0.6, 3 * p.scale, radius * 1.2);
+
+      runnerCtx.restore();
+    }
+
+    function drawSubwaySurferCharacter() {
+      // Add bumpOffset to playerVisualX for side impact feedback
+      const effectiveVisualX = playerVisualX + bumpOffset;
+      const p = project3D(effectiveVisualX, playerDistance, playerY);
+      if (!p) return;
+
+      const bob = isRolling ? 0 : Math.sin(runCycle * 2) * 3;
+      const legSwing = Math.sin(runCycle) * 12;
+      const tiltAngle = (playerLane - 1 - playerVisualX) * 0.28 + bumpOffset * 0.8;
+
+      runnerCtx.save();
+      runnerCtx.translate(p.x, p.y + bob);
+      runnerCtx.rotate(tiltAngle);
+
+      const heightScale = 1 + (baseTrackHeight / 52) * 0.12;
+      runnerCtx.scale(heightScale, heightScale);
+
+      const shadowDist = (playerY - baseTrackHeight);
+      const pShadow = project3D(effectiveVisualX, playerDistance, baseTrackHeight);
+      if (pShadow) {
+        runnerCtx.save();
+        runnerCtx.translate(0, (pShadow.y - (p.y + bob)) / heightScale);
+        runnerCtx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+        runnerCtx.beginPath();
+        runnerCtx.ellipse(0, 4, Math.max(10, (isRolling ? 28 : 24) * (1 - shadowDist * 0.008)), 6, 0, 0, Math.PI * 2);
+        runnerCtx.fill();
+        runnerCtx.restore();
+      }
+
+      if (isRolling) {
+        runnerCtx.fillStyle = '#0284c7';
+        runnerCtx.beginPath();
+        runnerCtx.ellipse(0, -12, 19, 10, 0, 0, Math.PI * 2);
+        runnerCtx.fill();
+
+        runnerCtx.fillStyle = '#fbbf24';
+        runnerCtx.beginPath();
+        runnerCtx.arc(10, -14, 7.5, 0, Math.PI * 2);
+        runnerCtx.fill();
+
+        runnerCtx.fillStyle = '#f59e0b';
+        runnerCtx.fillRect(-16, -8, 8, 5);
+
+        runnerCtx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+        runnerCtx.fillRect(-24, -2, 12, 2);
+        runnerCtx.fillRect(-28, -6, 8, 2);
+      } else {
+        runnerCtx.fillStyle = '#1e293b';
+        runnerCtx.fillRect(-11, -26 + legSwing * 0.4, 7, 22);
+        runnerCtx.fillStyle = '#f59e0b';
+        runnerCtx.fillRect(-13, -6 + legSwing * 0.4, 10, 6);
+
+        runnerCtx.fillStyle = '#1e293b';
+        runnerCtx.fillRect(4, -26 - legSwing * 0.4, 7, 22);
+        runnerCtx.fillStyle = '#f59e0b';
+        runnerCtx.fillRect(2, -6 - legSwing * 0.4, 10, 6);
+
+        runnerCtx.fillStyle = '#0284c7';
+        runnerCtx.beginPath();
+        runnerCtx.roundRect(-14, -50, 28, 26, 6);
+        runnerCtx.fill();
+
+        runnerCtx.fillStyle = '#fbbf24';
+        runnerCtx.fillRect(-3, -48, 6, 22);
+
+        runnerCtx.fillStyle = '#0369a1';
+        runnerCtx.fillRect(-18, -48 - legSwing * 0.3, 5, 18);
+        runnerCtx.fillRect(13, -48 + legSwing * 0.3, 5, 18);
+
+        runnerCtx.fillStyle = '#fed7aa';
+        runnerCtx.beginPath();
+        runnerCtx.arc(0, -57, 9, 0, Math.PI * 2);
+        runnerCtx.fill();
+
+        runnerCtx.fillStyle = '#0f172a';
+        runnerCtx.beginPath();
+        runnerCtx.arc(0, -60, 9.5, Math.PI, 0);
+        runnerCtx.fill();
+        runnerCtx.fillRect(-7, -60, 14, 4);
+      }
+
+      runnerCtx.restore();
+    }
+
+    // =================================================================
+    // 5. INPUT CONTROLS & SIDE-TRAIN BUMP COLLISION
+    // =================================================================
+    window.addEventListener('keydown', (e) => {
+      if (!runnerActive) return;
+
+      if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
+        e.preventDefault();
+        moveRunnerLane(-1);
+      } else if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
+        e.preventDefault();
+        moveRunnerLane(1);
+      } else if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W' || e.key === ' ') {
+        e.preventDefault();
+        triggerRunnerJump();
+      } else if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') {
+        e.preventDefault();
+        triggerRunnerRoll();
+      }
+    });
+
+    function moveRunnerLane(delta) {
+      const targetLane = playerLane + delta;
+      if (targetLane < 0 || targetLane > 2) return;
+
+      const targetLaneCoord = targetLane - 1;
+
+      // Check if moving sideways directly into a train car body!
+      let blockedByTrain = false;
+      for (let i = 0; i < obstacles.length; i++) {
+        const obs = obstacles[i];
+        if (obs.type === 'train' && obs.lane === targetLaneCoord) {
+          // Check if player's Z position is within the train's length
+          if (playerDistance >= obs.z + 12 && playerDistance <= obs.z + obs.length) {
+            // Blocked if player is below train roof level
+            if (playerY < 42) {
+              blockedByTrain = true;
+              break;
+            }
+          }
+        }
+      }
+
+      if (blockedByTrain) {
+        // Bump against the train side: player stays in current lane, vibrates/bounces back
+        soundBump();
+        bumpVelocity = delta * 1.5; // Quick physical impulse
+        bumpOffset = delta * 0.16;
+
+        // Visual spark burst at collision point
+        const sparkP = project3D(playerVisualX + delta * 0.45, playerDistance, 20);
+        if (sparkP) {
+          for (let s = 0; s < 7; s++) {
+            runnerParticles.push({
+              x: sparkP.x,
+              y: sparkP.y,
+              vx: (Math.random() - 0.5) * 120 - delta * 40,
+              vy: (Math.random() - 0.5) * 120,
+              color: '#fef08a',
+              life: 0.25,
+              maxLife: 0.25
+            });
+          }
+        }
+        return; // Lane switch blocked!
+      }
+
+      // Safe to switch lanes
+      playerLane = targetLane;
+      soundLaneSwitch();
+    }
+
+    function triggerRunnerJump() {
+      if (!isJumping) {
+        isJumping = true;
+        isRolling = false;
+        playerVy = 390;
+        soundJump();
+      }
+    }
+
+    function triggerRunnerRoll() {
+      if (isJumping || playerY > baseTrackHeight) {
+        playerVy = -550;
+      }
+      isRolling = true;
+      rollTimer = 0.7;
+      soundRoll();
+    }
+
+    let touchStartX = 0;
+    let touchStartY = 0;
+
+    runnerCanvas.addEventListener('touchstart', (e) => {
+      if (e.touches.length > 0) {
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+      }
+    }, { passive: true });
+
+    runnerCanvas.addEventListener('touchmove', (e) => {
+      if (runnerActive && e.cancelable) e.preventDefault();
+    }, { passive: false });
+
+    runnerCanvas.addEventListener('touchend', (e) => {
+      if (!runnerActive || e.changedTouches.length === 0) return;
+      const dx = e.changedTouches[0].clientX - touchStartX;
+      const dy = e.changedTouches[0].clientY - touchStartY;
+
+      if (Math.abs(dx) > Math.abs(dy)) {
+        if (dx > 25) moveRunnerLane(1);
+        else if (dx < -25) moveRunnerLane(-1);
+      } else {
+        if (dy < -28) triggerRunnerJump();
+        else if (dy > 28) triggerRunnerRoll();
+      }
+    }, { passive: true });
+
+    document.getElementById('touchLeftBtn').addEventListener('click', (e) => {
+      e.stopPropagation();
+      moveRunnerLane(-1);
+    });
+    document.getElementById('touchRightBtn').addEventListener('click', (e) => {
+      e.stopPropagation();
+      moveRunnerLane(1);
+    });
+    document.getElementById('touchJumpBtn').addEventListener('click', (e) => {
+      e.stopPropagation();
+      triggerRunnerJump();
+    });
+    document.getElementById('touchRollBtn').addEventListener('click', (e) => {
+      e.stopPropagation();
+      triggerRunnerRoll();
+    });
+
+    window.onload = function() {
+      startRunnerGame();
+    };
+  </script>
+</body>
+</html>
