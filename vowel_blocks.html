@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vowel Blocks</title>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@800;900&family=Rubik:wght@800;900&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      background-color: #F7F4EA;
+      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+      user-select: none;
+      -webkit-user-select: none;
+      background-image: radial-gradient(#E2DAC7 1.5px, transparent 1.5px);
+      background-size: 24px 24px;
+      touch-action: none;
+    }
+
+    .font-hebrew {
+      font-family: 'Rubik', sans-serif;
+    }
+
+    /* Chunky physical neo-brutalist buttons */
+    .fun-pill-btn {
+      text-decoration: none;
+      outline: none;
+      border: 3px solid #18181B;
+      box-shadow: 4px 4px 0px #18181B;
+      transition: transform 0.08s ease, box-shadow 0.08s ease;
+    }
+    .fun-pill-btn:hover {
+      transform: translate(-2px, -2px);
+      box-shadow: 6px 6px 0px #18181B;
+    }
+    .fun-pill-btn:active {
+      transform: translate(2px, 2px);
+      box-shadow: 1px 1px 0px #18181B;
+    }
+
+    /* Sleek thin-border grid cells with dark empty background */
+    .grid-cell {
+      width: 36px;
+      height: 36px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background-color: #18181B;
+      transition: background-color 0.1s ease, transform 0.15s ease, opacity 0.15s ease;
+    }
+
+    @media (min-width: 640px) {
+      .grid-cell {
+        width: 44px;
+        height: 44px;
+      }
+    }
+
+    /* Board Shake Animation for Wrong Vowel */
+    @keyframes boardShake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-8px); }
+      40%, 80% { transform: translateX(8px); }
+    }
+    .shake-board {
+      animation: boardShake 0.35s ease-in-out;
+    }
+
+    /* Cascading Left-to-Right Wave Dissolve Animation */
+    @keyframes waveDissolve {
+      0% { transform: scale(1); opacity: 1; filter: brightness(1); }
+      40% { transform: scale(1.18) rotate(3deg); filter: brightness(1.25); }
+      100% { transform: scale(0) rotate(-15deg); opacity: 0; }
+    }
+    .pop-clear {
+      animation: waveDissolve 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+
+    /* Preview a row/column that WILL clear if the hovered piece is dropped. */
+    @keyframes clearPreviewPulse {
+      0%, 100% {
+        filter: brightness(1.35) saturate(1.2);
+        box-shadow: inset 0 0 0 2px rgba(255,255,255,0.8);
+      }
+      50% {
+        filter: brightness(1.75) saturate(1.4);
+        box-shadow:
+          inset 0 0 0 3px rgba(255,255,255,1),
+          0 0 8px rgba(255,255,255,0.7);
+      }
+    }
+
+    .clear-preview {
+      position: relative;
+      z-index: 2;
+      animation: clearPreviewPulse 0.65s ease-in-out infinite;
+    }
+  </style>
+</head>
+<body class="min-h-screen w-full flex flex-col justify-between p-3 sm:p-6 selection:bg-amber-400 selection:text-zinc-950">
+
+  <header class="w-full max-w-4xl mx-auto flex flex-wrap items-center justify-between gap-3 pb-3 border-b-4 border-zinc-950">
+    <div class="flex items-center gap-3">
+      <a href="vowels.html" 
+         class="fun-pill-btn px-4 py-2 rounded-2xl bg-white text-zinc-950 font-black text-sm flex items-center gap-1.5 cursor-pointer"
+         title="Return to Vowels Hub">
+        <span class="text-base leading-none">&larr;</span>
+        <span>Back</span>
+      </a>
+      <div>
+        <h1 class="text-xl sm:text-2xl font-black text-zinc-950 tracking-tight flex items-center gap-2">
+          <span>Vowel Blocks</span>
+        </h1>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-3">
+      <div class="flex items-center gap-2 bg-white px-3.5 py-1.5 rounded-2xl border-3 border-zinc-950 shadow-[3px_3px_0px_#18181B]">
+        <span class="text-xs font-black uppercase text-zinc-500">Score:</span>
+        <span id="scoreVal" class="font-mono text-base font-black text-zinc-950">0</span>
+      </div>
+
+      <button onclick="initGame()" class="fun-pill-btn px-4 py-2 rounded-2xl bg-[#FFC72C] text-zinc-950 font-black text-xs sm:text-sm cursor-pointer">
+        Restart
+      </button>
+    </div>
+  </header>
+
+  <main class="w-full max-w-4xl mx-auto flex-1 flex flex-col items-center justify-center my-4 gap-5">
+    
+    <div class="flex flex-col items-center gap-1">
+      <div id="promptBar" class="bg-white border-4 border-zinc-950 rounded-2xl px-6 py-2.5 shadow-[4px_4px_0px_#18181B] flex items-center gap-3 transition-colors duration-200">
+        <span class="text-xs font-black uppercase tracking-wider text-zinc-500">Target Sound:</span>
+        <span id="targetPromptText" class="text-xl font-black text-amber-600 uppercase font-mono tracking-wider">--</span>
+      </div>
+      <span id="warningMsg" class="text-xs font-black text-rose-500 h-4 opacity-0 transition-opacity">Wrong vowel! Match the top target sound.</span>
+    </div>
+
+    <div id="boardContainer" class="bg-[#27272A] border-4 border-zinc-950 rounded-[2.5rem] p-5 sm:p-6 shadow-[8px_8px_0px_#18181B] flex flex-col items-center relative">
+      <div id="board" class="grid grid-cols-8 gap-[1px] bg-zinc-950 p-2 rounded-2xl border-2 border-zinc-950">
+        </div>
+    </div>
+
+    <div class="w-full max-w-lg bg-white border-4 border-zinc-950 rounded-[2rem] p-4 sm:p-5 shadow-[6px_6px_0px_#18181B] flex items-center justify-around gap-4 min-h-[140px]" id="trayContainer">
+      </div>
+
+  </main>
+
+  <div id="dragGhost" class="fixed pointer-events-none z-50 hidden grid gap-1"></div>
+
+  <footer class="w-full text-center py-2 text-xs text-zinc-500 font-bold">
+    Match the English sound at the top &bull; Drag shapes onto the board &bull; Clear full rows &amp; columns!
+  </footer>
+
+  <div id="gameOverModal" class="fixed inset-0 bg-zinc-950/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden opacity-0 transition-opacity duration-200">
+    <div class="bg-white border-4 border-zinc-950 rounded-[2rem] p-6 sm:p-8 max-w-sm w-full text-center shadow-[8px_8px_0px_#18181B] transform scale-95 transition-transform duration-200">
+      <div class="w-16 h-16 mx-auto rounded-full bg-rose-400 border-4 border-zinc-950 flex items-center justify-center mb-3 shadow-[3px_3px_0px_#18181B]">
+        <span class="text-3xl">💥</span>
+      </div>
+
+      <h2 class="text-2xl font-black text-zinc-950 mb-1">You Lose - No More Moves Possible</h2>
+      <p class="text-xs text-zinc-600 font-bold mb-5">None of your remaining blocks can fit anywhere.</p>
+
+      <div class="bg-[#F7F4EA] p-3 rounded-2xl border-3 border-zinc-950 mb-5">
+        <p class="text-[10px] text-zinc-500 uppercase font-black">Final Score</p>
+        <p id="finalScore" class="text-2xl font-mono font-black text-zinc-950 mt-0.5">0</p>
+      </div>
+
+      <button onclick="closeGameOver(); initGame();" class="fun-pill-btn w-full py-3 rounded-2xl bg-[#FFC72C] text-zinc-950 font-black text-sm cursor-pointer">
+        Play Again
+      </button>
+    </div>
+  </div>
+
+  <script>
+    // =================================================================
+    // 1. VOWEL SHAPES & SOUND DEFINITIONS
+    // =================================================================
+    const VOWELS_DATA = [
+      { 
+        soundLabel: 'A', 
+        color: '#FFC72C', 
+        matrix: [
+          [1, 1, 1],
+          [0, 1, 0]
+        ] // T-like connected block shape
+      },
+      { 
+        soundLabel: 'E', 
+        color: '#38BDF8', 
+        matrix: [
+          [1, 1, 1]
+        ] // 3 connected horizontal blocks (line)
+      },
+      { 
+        soundLabel: 'EE', 
+        color: '#34D399', 
+        matrix: [
+          [1]
+        ] // Standalone single dot block
+      },
+      { 
+        soundLabel: 'OO', 
+        color: '#A78BFA', 
+        matrix: [
+          [1, 0, 0],
+          [0, 1, 0],
+          [0, 0, 1]
+        ] // Three diagonal connected blocks
+      },
+      { 
+        soundLabel: 'OH', 
+        color: '#FB7185', 
+        matrix: [
+          [1, 0],
+          [0, 0]
+        ] // Cholam dot in top-left corner relative to imaginary consonant box
+      }
+    ];
+
+    const BOARD_SIZE = 8;
+    let board = Array(BOARD_SIZE).fill(0).map(() => Array(BOARD_SIZE).fill(null));
+    let score = 0;
+    let availableShapes = []; 
+    let currentTargetVowel = null;
+    let clearAnimationInProgress = false;
+
+    // Active drag tracking state
+    let activeDrag = null; // { trayIndex, shapeObj, bubbleBox, clientX, clientY }
+
+    // =================================================================
+    // 2. GAME LOGIC & RENDERING
+    // =================================================================
+    function initGame() {
+      board = Array(BOARD_SIZE).fill(0).map(() => Array(BOARD_SIZE).fill(null));
+      score = 0;
+      document.getElementById('scoreVal').textContent = '0';
+      closeGameOver();
+      generateNewShapes();
+
+      // At the start of a fresh game, choose only a shape that can be placed.
+      // (On an empty board, all current shapes are playable.)
+      pickNewTarget();
+
+      renderBoard();
+      renderTray();
+    }
+
+    // Returns true if this specific shape can fit ANYWHERE on the current board.
+    function shapeHasAnyValidMove(shapeObj) {
+      if (!shapeObj) return false;
+
+      for (let r = 0; r < BOARD_SIZE; r++) {
+        for (let c = 0; c < BOARD_SIZE; c++) {
+          if (canPlaceShape(shapeObj.matrix, r, c)) {
+            return true;
+          }
+        }
+      }
+      return false;
+    }
+
+    // Only choose the target sound from pieces that are actually playable.
+    // Example: if A cannot fit but E can, E is guaranteed to be the target.
+    function pickNewTarget() {
+      const playableShapes = availableShapes.filter(
+        shapeObj => shapeObj !== null && shapeHasAnyValidMove(shapeObj)
+      );
+
+      if (playableShapes.length === 0) {
+        currentTargetVowel = null;
+        document.getElementById('targetPromptText').textContent = '--';
+        return false;
+      }
+
+      const randomPlayable =
+        playableShapes[Math.floor(Math.random() * playableShapes.length)];
+
+      currentTargetVowel = randomPlayable.vowel;
+      document.getElementById('targetPromptText').textContent =
+        currentTargetVowel.soundLabel;
+
+      return true;
+    }
+
+    // Called only after the board has fully settled, including line-clear animations.
+    function finishTurn() {
+      if (availableShapes.every(s => s === null)) {
+        generateNewShapes();
+      }
+
+      // This is the LAST-POSSIBILITY check:
+      // if even one remaining piece fits, that playable piece becomes the target.
+      if (!pickNewTarget()) {
+        showGameOver();
+        return;
+      }
+
+      renderTray();
+    }
+
+    // Work out which COMPLETE rows/columns would be created by the
+    // currently hovered piece. This is only a visual preview; board state
+    // is not changed until the player actually drops the piece.
+    function getPreviewClearCells(hoverCells) {
+      const clearCells = new Set();
+      if (!hoverCells || hoverCells.length === 0) return clearCells;
+
+      const hovered = new Set(hoverCells.map(cell => `${cell.r},${cell.c}`));
+
+      const wouldBeFilled = (r, c) =>
+        board[r][c] !== null || hovered.has(`${r},${c}`);
+
+      // Preview every row that would become full.
+      for (let r = 0; r < BOARD_SIZE; r++) {
+        let full = true;
+        for (let c = 0; c < BOARD_SIZE; c++) {
+          if (!wouldBeFilled(r, c)) {
+            full = false;
+            break;
+          }
+        }
+
+        if (full) {
+          for (let c = 0; c < BOARD_SIZE; c++) {
+            clearCells.add(`${r},${c}`);
+          }
+        }
+      }
+
+      // Preview every column that would become full.
+      for (let c = 0; c < BOARD_SIZE; c++) {
+        let full = true;
+        for (let r = 0; r < BOARD_SIZE; r++) {
+          if (!wouldBeFilled(r, c)) {
+            full = false;
+            break;
+          }
+        }
+
+        if (full) {
+          for (let r = 0; r < BOARD_SIZE; r++) {
+            clearCells.add(`${r},${c}`);
+          }
+        }
+      }
+
+      return clearCells;
+    }
+
+    function renderBoard(hoverCells = []) {
+      const boardEl = document.getElementById('board');
+      boardEl.innerHTML = '';
+
+      // If this drop would complete one or more lines, every cell in every
+      // affected row/column gets the brighter pulsing preview.
+      const previewClearCells = getPreviewClearCells(hoverCells);
+
+      for (let r = 0; r < BOARD_SIZE; r++) {
+        for (let c = 0; c < BOARD_SIZE; c++) {
+          const cell = document.createElement('div');
+          cell.className = 'grid-cell rounded-[4px] flex items-center justify-center';
+          cell.dataset.row = r;
+          cell.dataset.col = c;
+
+          const isHovered = hoverCells.some(hc => hc.r === r && hc.c === c);
+
+          if (board[r][c]) {
+            cell.style.backgroundColor = board[r][c].color;
+            cell.style.border = '1px solid #18181B';
+          } else if (isHovered) {
+            cell.style.backgroundColor = hoverCells.find(hc => hc.r === r && hc.c === c).color + '66';
+            cell.style.border = '1px dashed #18181B';
+          } else {
+            cell.style.backgroundColor = '#27272A';
+            cell.style.border = '1px solid rgba(255, 255, 255, 0.12)';
+          }
+
+          // Highlight ALL lines that would clear on this exact drop.
+          // Intersections and multiple simultaneous rows/columns are all included.
+          if (previewClearCells.has(`${r},${c}`)) {
+            cell.classList.add('clear-preview');
+          }
+
+          boardEl.appendChild(cell);
+        }
+      }
+    }
+
+    function generateNewShapes() {
+      availableShapes = [];
+
+      // Keep your original behavior of carrying one target-related shape forward
+      // when possible, then add two random shapes.
+      const fallbackVowel = currentTargetVowel || VOWELS_DATA[0];
+      availableShapes.push({
+        id: Math.random(),
+        matrix: fallbackVowel.matrix,
+        vowel: fallbackVowel
+      });
+
+      for (let i = 0; i < 2; i++) {
+        const randomVowel = VOWELS_DATA[Math.floor(Math.random() * VOWELS_DATA.length)];
+        availableShapes.push({
+          id: Math.random(),
+          matrix: randomVowel.matrix,
+          vowel: randomVowel
+        });
+      }
+
+      availableShapes.sort(() => Math.random() - 0.5);
+    }
+
+    function renderTray() {
+      const tray = document.getElementById('trayContainer');
+      tray.innerHTML = '';
+
+      availableShapes.forEach((shapeObj, trayIndex) => {
+        if (!shapeObj) {
+          const emptySlot = document.createElement('div');
+          emptySlot.className = 'w-24 h-24 flex items-center justify-center text-zinc-300 text-xs font-bold';
+          emptySlot.textContent = 'Empty';
+          tray.appendChild(emptySlot);
+          return;
+        }
+
+        const bubbleBox = document.createElement('div');
+        bubbleBox.className = 'cursor-grab p-3 flex flex-col items-center justify-center bg-[#F7F4EA] border-3 border-zinc-950 rounded-3xl shadow-[4px_4px_0px_#18181B] hover:scale-105 transition-transform touch-none';
+        bubbleBox.dataset.trayIndex = trayIndex;
+
+        const matrixEl = document.createElement('div');
+        matrixEl.className = 'grid gap-[2px] pointer-events-none';
+        const rows = shapeObj.matrix.length;
+        const cols = shapeObj.matrix[0].length;
+        matrixEl.style.gridTemplateColumns = `repeat(${cols}, minmax(0, 1fr))`;
+
+        shapeObj.matrix.forEach(row => {
+          row.forEach(val => {
+            const block = document.createElement('div');
+            block.className = 'w-5 h-5 rounded-[3px] border border-zinc-950 flex items-center justify-center';
+            if (val === 1) {
+              block.style.backgroundColor = shapeObj.vowel.color;
+            } else {
+              block.style.backgroundColor = 'transparent';
+              block.style.borderColor = 'transparent';
+            }
+            matrixEl.appendChild(block);
+          });
+        });
+
+        bubbleBox.appendChild(matrixEl);
+
+        bubbleBox.addEventListener('pointerdown', (e) => startPointerDrag(e, trayIndex, shapeObj, bubbleBox));
+
+        tray.appendChild(bubbleBox);
+      });
+    }
+
+    // =================================================================
+    // 3. CUSTOM POINTER DRAG & DROP ENGINE
+    // =================================================================
+    function startPointerDrag(e, trayIndex, shapeObj, bubbleBox) {
+      e.preventDefault();
+      activeDrag = { trayIndex, shapeObj, bubbleBox };
+
+      const ghost = document.getElementById('dragGhost');
+      ghost.innerHTML = '';
+      const rows = shapeObj.matrix.length;
+      const cols = shapeObj.matrix[0].length;
+      ghost.style.gridTemplateColumns = `repeat(${cols}, minmax(0, 1fr))`;
+
+      shapeObj.matrix.forEach(row => {
+        row.forEach(val => {
+          const block = document.createElement('div');
+          block.className = 'w-9 h-9 rounded-md border border-zinc-950 flex items-center justify-center shadow-[2px_2px_0px_#18181B]';
+          if (val === 1) {
+            block.style.backgroundColor = shapeObj.vowel.color;
+          } else {
+            block.style.backgroundColor = 'transparent';
+            block.style.borderColor = 'transparent';
+            block.style.boxShadow = 'none';
+          }
+          ghost.appendChild(block);
+        });
+      });
+
+      ghost.style.left = (e.clientX - 36) + 'px';
+      ghost.style.top = (e.clientY - 36) + 'px';
+      ghost.classList.remove('hidden');
+
+      bubbleBox.style.opacity = '0.35';
+
+      window.addEventListener('pointermove', onPointerMove);
+      window.addEventListener('pointerup', onPointerUp);
+    }
+
+    function onPointerMove(e) {
+      if (!activeDrag) return;
+      const ghost = document.getElementById('dragGhost');
+      ghost.style.left = (e.clientX - 36) + 'px';
+      ghost.style.top = (e.clientY - 36) + 'px';
+
+      const elem = document.elementFromPoint(e.clientX, e.clientY);
+      const cell = elem ? elem.closest('.grid-cell') : null;
+
+      if (cell) {
+        const r = parseInt(cell.dataset.row);
+        const c = parseInt(cell.dataset.col);
+        if (canPlaceShape(activeDrag.shapeObj.matrix, r, c)) {
+          const hoverCells = getShapeCells(activeDrag.shapeObj.matrix, r, c, activeDrag.shapeObj.vowel.color);
+          renderBoard(hoverCells);
+          return;
+        }
+      }
+      renderBoard();
+    }
+
+    function onPointerUp(e) {
+      if (!activeDrag) return;
+      window.removeEventListener('pointermove', onPointerMove);
+      window.removeEventListener('pointerup', onPointerUp);
+
+      const ghost = document.getElementById('dragGhost');
+      ghost.classList.add('hidden');
+      activeDrag.bubbleBox.style.opacity = '1';
+
+      const elem = document.elementFromPoint(e.clientX, e.clientY);
+      const cell = elem ? elem.closest('.grid-cell') : null;
+
+      if (cell) {
+        const targetRow = parseInt(cell.dataset.row);
+        const targetCol = parseInt(cell.dataset.col);
+
+        if (activeDrag.shapeObj.vowel.soundLabel !== currentTargetVowel.soundLabel) {
+          triggerWrongVowelFeedback();
+          renderBoard();
+          activeDrag = null;
+          return;
+        }
+
+        if (canPlaceShape(activeDrag.shapeObj.matrix, targetRow, targetCol)) {
+          placeShape(activeDrag.shapeObj.matrix, activeDrag.shapeObj.vowel, targetRow, targetCol);
+          availableShapes[activeDrag.trayIndex] = null;
+
+          // Render the placed piece first.
+          renderBoard();
+          renderTray();
+
+          // IMPORTANT: do not choose the next target yet.
+          // A row/column clear may open new spaces and make a previously
+          // impossible remaining piece playable.
+          const isClearing = checkClears();
+
+          if (!isClearing) {
+            finishTurn();
+          }
+
+          activeDrag = null;
+          return;
+        }
+      }
+
+      renderBoard();
+      activeDrag = null;
+    }
+
+    function triggerWrongVowelFeedback() {
+      const container = document.getElementById('boardContainer');
+      const warning = document.getElementById('warningMsg');
+      const promptBar = document.getElementById('promptBar');
+
+      container.classList.add('shake-board');
+      promptBar.classList.add('bg-rose-100', 'border-rose-500');
+      warning.style.opacity = '1';
+
+      setTimeout(() => {
+        container.classList.remove('shake-board');
+        promptBar.classList.remove('bg-rose-100', 'border-rose-500');
+        warning.style.opacity = '0';
+      }, 550);
+    }
+
+    function getShapeCells(matrix, startRow, startCol, color) {
+      const cells = [];
+      const rows = matrix.length;
+      const cols = matrix[0].length;
+
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          if (matrix[r][c] === 1) {
+            cells.push({ r: startRow + r, c: startCol + c, color: color });
+          }
+        }
+      }
+      return cells;
+    }
+
+    function canPlaceShape(matrix, startRow, startCol) {
+      const rows = matrix.length;
+      const cols = matrix[0].length;
+
+      if (startRow + rows > BOARD_SIZE || startCol + cols > BOARD_SIZE) return false;
+
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          if (matrix[r][c] === 1) {
+            if (board[startRow + r][startCol + c] !== null) return false;
+          }
+        }
+      }
+      return true;
+    }
+
+    function placeShape(matrix, vowel, startRow, startCol) {
+      const rows = matrix.length;
+      const cols = matrix[0].length;
+
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          if (matrix[r][c] === 1) {
+            board[startRow + r][startCol + c] = {
+              color: vowel.color
+            };
+          }
+        }
+      }
+
+      score += 15;
+      document.getElementById('scoreVal').textContent = score;
+    }
+
+    function checkClears() {
+      let rowsToClear = [];
+      let colsToClear = [];
+
+      for (let r = 0; r < BOARD_SIZE; r++) {
+        if (board[r].every(cell => cell !== null)) {
+          rowsToClear.push(r);
+        }
+      }
+
+      for (let c = 0; c < BOARD_SIZE; c++) {
+        let fullCol = true;
+        for (let r = 0; r < BOARD_SIZE; r++) {
+          if (board[r][c] === null) {
+            fullCol = false;
+            break;
+          }
+        }
+        if (fullCol) colsToClear.push(c);
+      }
+
+      if (rowsToClear.length === 0 && colsToClear.length === 0) {
+        return false;
+      }
+
+      clearAnimationInProgress = true;
+      const boardEl = document.getElementById('board');
+      const cellDelays = new Map();
+      let maxDelay = 0;
+
+      rowsToClear.forEach(r => {
+        for (let c = 0; c < BOARD_SIZE; c++) {
+          const index = r * BOARD_SIZE + c;
+          const delay = c * 70;
+          const oldDelay = cellDelays.get(index);
+          cellDelays.set(index, oldDelay === undefined ? delay : Math.min(oldDelay, delay));
+        }
+      });
+
+      colsToClear.forEach(c => {
+        for (let r = 0; r < BOARD_SIZE; r++) {
+          const index = r * BOARD_SIZE + c;
+          const delay = r * 70;
+          const oldDelay = cellDelays.get(index);
+          cellDelays.set(index, oldDelay === undefined ? delay : Math.min(oldDelay, delay));
+        }
+      });
+
+      cellDelays.forEach((delay, index) => {
+        const cellEl = boardEl.children[index];
+        if (!cellEl) return;
+
+        maxDelay = Math.max(maxDelay, delay);
+        cellEl.style.animationDelay = `${delay}ms`;
+        cellEl.classList.add('pop-clear');
+      });
+
+      setTimeout(() => {
+        rowsToClear.forEach(r => {
+          for (let c = 0; c < BOARD_SIZE; c++) board[r][c] = null;
+          score += 100;
+        });
+
+        colsToClear.forEach(c => {
+          for (let r = 0; r < BOARD_SIZE; r++) board[r][c] = null;
+          score += 100;
+        });
+
+        document.getElementById('scoreVal').textContent = score;
+        renderBoard();
+
+        clearAnimationInProgress = false;
+
+        // Now that cleared cells are truly empty, re-check every remaining
+        // piece and target only one that can actually fit.
+        finishTurn();
+      }, maxDelay + 400);
+
+      return true;
+    }
+
+    function checkGameOver() {
+      if (clearAnimationInProgress) return false;
+
+      const activeShapes = availableShapes.filter(s => s !== null);
+      if (activeShapes.length === 0) return false;
+
+      const anyPlayable = activeShapes.some(shapeHasAnyValidMove);
+
+      if (!anyPlayable) {
+        currentTargetVowel = null;
+        document.getElementById('targetPromptText').textContent = '--';
+        showGameOver();
+        return true;
+      }
+
+      return false;
+    }
+
+    function showGameOver() {
+      document.getElementById('finalScore').textContent = score;
+      const modal = document.getElementById('gameOverModal');
+      modal.classList.remove('hidden');
+      setTimeout(() => {
+        modal.classList.remove('opacity-0');
+        modal.firstElementChild.classList.remove('scale-95');
+      }, 20);
+    }
+
+    function closeGameOver() {
+      const modal = document.getElementById('gameOverModal');
+      modal.classList.add('opacity-0');
+      modal.firstElementChild.classList.add('scale-95');
+      setTimeout(() => modal.classList.add('hidden'), 200);
+    }
+
+    window.onload = function() {
+      initGame();
+    };
+  </script>
+</body>
+</html>
