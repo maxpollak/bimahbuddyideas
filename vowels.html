@@ -64,6 +64,8 @@
 
     /* Golden Amber for Vowel Lock */
     .btn-lock { background-color: #FFC72C; }
+    /* Sky Blue for Vowel Blocks */
+    .btn-blocks { background-color: #38BDF8; }
   </style>
 </head>
 <body class="min-h-screen w-full flex flex-col justify-between p-6 sm:p-10">
@@ -77,7 +79,7 @@
     </a>
   </header>
 
-  <!-- Centered Grid with Vowel Lock button -->
+  <!-- Centered Grid with Game buttons -->
   <main class="w-full flex-1 flex items-center justify-center my-6">
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 max-w-5xl justify-items-center">
       
@@ -89,6 +91,17 @@
         </span>
         <span class="relative z-10 text-xl sm:text-2xl font-black text-zinc-950 tracking-tight leading-tight">
           Vowel<br>Lock
+        </span>
+      </a>
+
+      <!-- Vowel Blocks (Active Game) -->
+      <a href="vowel_block_blast.html" 
+         class="fun-square-btn btn-blocks w-48 h-48 sm:w-56 sm:h-56 aspect-square rounded-[2rem] flex flex-col items-center justify-center p-6 text-center cursor-pointer overflow-hidden">
+        <span class="absolute -bottom-4 -right-2 font-hebrew text-8xl sm:text-9xl font-black text-black/10 leading-none pointer-events-none">
+          ב
+        </span>
+        <span class="relative z-10 text-xl sm:text-2xl font-black text-zinc-950 tracking-tight leading-tight">
+          Vowel<br>Blocks
         </span>
       </a>
 
