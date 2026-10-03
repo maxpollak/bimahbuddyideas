@@ -64,22 +64,33 @@
     .btn-match { background-color: #FFC72C; }    /* Golden Honey */
     .btn-runner { background-color: #38BDF8; }   /* Electric Sky */
     .btn-slicer { background-color: #FB7185; }   /* Bold Rose */
+    .btn-weeks { background-color: #C4B5FD; }
     .btn-catcher { background-color: #34D399; }  /* Mint Emerald */
+    [hidden] { display: none !important; }
+    .menu-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 2rem; }
+    .fun-square-btn:focus-visible, .back-pill-btn:focus-visible {
+      outline: 4px solid #2563EB;
+      outline-offset: 6px;
+    }
+    .menu-title:focus { outline: none; }
+    @media (prefers-reduced-motion: reduce) {
+      .fun-square-btn, .back-pill-btn { transition: none; }
+    }
   </style>
 </head>
 <body class="min-h-screen w-full flex flex-col justify-between p-6 sm:p-10">
 
   <header class="w-full max-w-5xl mx-auto flex items-center justify-start">
-    <a href="index.html" 
+    <a id="menuBack" href="index.html" 
        class="back-pill-btn px-5 py-2.5 rounded-2xl bg-white text-zinc-950 font-black text-sm sm:text-base flex items-center gap-2 cursor-pointer">
       <span class="text-lg leading-none">&larr;</span>
-      <span>Back to Hub</span>
+      <span id="menuBackLabel">Back to Hub</span>
     </a>
   </header>
 
-  <main class="w-full flex-1 flex items-center justify-center my-6">
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 max-w-5xl justify-items-center">
-      
+  <main class="w-full flex-1 flex items-center justify-center my-8">
+    <section id="allGames" aria-label="Letter games" class="w-full max-w-5xl">
+      <div class="menu-grid">
       <a href="letter_match.html" 
          class="fun-square-btn btn-match w-48 h-48 sm:w-56 sm:h-56 aspect-square rounded-[2rem] flex flex-col items-center justify-center p-6 text-center cursor-pointer overflow-hidden">
         <span class="absolute -bottom-4 -right-2 font-hebrew text-8xl sm:text-9xl font-black text-black/10 leading-none pointer-events-none">
@@ -89,7 +100,6 @@
           Alef-Bet<br>Match
         </span>
       </a>
-
       <a href="letter_runner.html" 
          class="fun-square-btn btn-runner w-48 h-48 sm:w-56 sm:h-56 aspect-square rounded-[2rem] flex flex-col items-center justify-center p-6 text-center cursor-pointer overflow-hidden">
         <span class="absolute -bottom-4 -right-2 font-hebrew text-8xl sm:text-9xl font-black text-black/10 leading-none pointer-events-none">
@@ -99,7 +109,6 @@
           Alef-Bet<br>Runner
         </span>
       </a>
-
       <a href="letter_slicer.html" 
          class="fun-square-btn btn-slicer w-48 h-48 sm:w-56 sm:h-56 aspect-square rounded-[2rem] flex flex-col items-center justify-center p-6 text-center cursor-pointer overflow-hidden">
         <span class="absolute -bottom-4 -right-2 font-hebrew text-8xl sm:text-9xl font-black text-black/10 leading-none pointer-events-none">
@@ -109,7 +118,6 @@
           Alef-Bet<br>Slicer
         </span>
       </a>
-
       <a href="letter_catcher.html" 
          class="fun-square-btn btn-catcher w-48 h-48 sm:w-56 sm:h-56 aspect-square rounded-[2rem] flex flex-col items-center justify-center p-6 text-center cursor-pointer overflow-hidden">
         <span class="absolute -bottom-4 -right-2 font-hebrew text-8xl sm:text-9xl font-black text-black/10 leading-none pointer-events-none">
@@ -119,11 +127,127 @@
           Alef-Bet<br>Catcher
         </span>
       </a>
-
-    </div>
+      <a href="#weeks" class="fun-square-btn btn-weeks w-48 h-48 sm:w-56 sm:h-56 aspect-square rounded-[2rem] flex flex-col items-center justify-center p-6 text-center cursor-pointer overflow-hidden">
+        <span aria-hidden="true" class="absolute -bottom-4 -right-2 font-hebrew text-8xl sm:text-9xl font-black text-black/10 leading-none pointer-events-none">1–4</span>
+        <span class="relative z-10 text-xl sm:text-2xl font-black text-zinc-950 tracking-tight leading-tight">By Week</span>
+        
+      </a>
+      </div>
+    </section>
+    <section id="weekMenu" aria-labelledby="weekMenuTitle" class="w-full max-w-5xl" hidden>
+      <h1 id="weekMenuTitle" tabindex="-1" class="menu-title text-3xl sm:text-4xl font-black text-zinc-950 text-center mb-3">By Week</h1>
+      <p class="text-center text-sm font-bold text-zinc-600 mb-8">Choose your week to find two games.</p>
+      <div class="menu-grid">
+      <a href="#week-1" class="fun-square-btn btn-weeks w-48 h-48 sm:w-56 sm:h-56 aspect-square rounded-[2rem] flex flex-col items-center justify-center p-6 text-center cursor-pointer overflow-hidden">
+        <span aria-hidden="true" class="absolute -bottom-4 -right-2 font-hebrew text-8xl sm:text-9xl font-black text-black/10 leading-none pointer-events-none">1</span>
+        <span class="relative z-10 text-xl sm:text-2xl font-black text-zinc-950 tracking-tight leading-tight">Week 1</span>
+        <span class="relative z-10 mt-3 text-xs font-black text-zinc-800">Catcher + Runner</span>
+      </a>
+      <a href="#week-2" class="fun-square-btn btn-weeks w-48 h-48 sm:w-56 sm:h-56 aspect-square rounded-[2rem] flex flex-col items-center justify-center p-6 text-center cursor-pointer overflow-hidden">
+        <span aria-hidden="true" class="absolute -bottom-4 -right-2 font-hebrew text-8xl sm:text-9xl font-black text-black/10 leading-none pointer-events-none">2</span>
+        <span class="relative z-10 text-xl sm:text-2xl font-black text-zinc-950 tracking-tight leading-tight">Week 2</span>
+        <span class="relative z-10 mt-3 text-xs font-black text-zinc-800">Match + Slicer</span>
+      </a>
+      <a href="#week-3" class="fun-square-btn btn-weeks w-48 h-48 sm:w-56 sm:h-56 aspect-square rounded-[2rem] flex flex-col items-center justify-center p-6 text-center cursor-pointer overflow-hidden">
+        <span aria-hidden="true" class="absolute -bottom-4 -right-2 font-hebrew text-8xl sm:text-9xl font-black text-black/10 leading-none pointer-events-none">3</span>
+        <span class="relative z-10 text-xl sm:text-2xl font-black text-zinc-950 tracking-tight leading-tight">Week 3</span>
+        <span class="relative z-10 mt-3 text-xs font-black text-zinc-800">Slicer + Match</span>
+      </a>
+      <a href="#week-4" class="fun-square-btn btn-weeks w-48 h-48 sm:w-56 sm:h-56 aspect-square rounded-[2rem] flex flex-col items-center justify-center p-6 text-center cursor-pointer overflow-hidden">
+        <span aria-hidden="true" class="absolute -bottom-4 -right-2 font-hebrew text-8xl sm:text-9xl font-black text-black/10 leading-none pointer-events-none">4</span>
+        <span class="relative z-10 text-xl sm:text-2xl font-black text-zinc-950 tracking-tight leading-tight">Week 4</span>
+        <span class="relative z-10 mt-3 text-xs font-black text-zinc-800">Runner + Slicer</span>
+      </a>
+      </div>
+    </section>
+    <section id="week1Games" aria-labelledby="week1Title" class="w-full max-w-5xl" hidden>
+      <h1 id="week1Title" tabindex="-1" class="menu-title text-3xl sm:text-4xl font-black text-zinc-950 text-center mb-3">Week 1</h1>
+      <p class="text-center text-sm font-bold text-zinc-600 mb-8">Aleph, Bet, Vet, Gimel, Dalet, Hey, Vav</p>
+      <div class="menu-grid">
+      <a href="By%20Week/Week%201/week_1_letter_catcher.html" class="fun-square-btn btn-catcher w-48 h-48 sm:w-56 sm:h-56 aspect-square rounded-[2rem] flex flex-col items-center justify-center p-6 text-center cursor-pointer overflow-hidden">
+        <span aria-hidden="true" class="absolute -bottom-4 -right-2 font-hebrew text-8xl sm:text-9xl font-black text-black/10 leading-none pointer-events-none">ד</span>
+        <span class="relative z-10 text-xl sm:text-2xl font-black text-zinc-950 tracking-tight leading-tight">Letter<br>Catcher</span>
+        
+      </a>
+      <a href="By%20Week/Week%201/week_1_letter_runner.html" class="fun-square-btn btn-runner w-48 h-48 sm:w-56 sm:h-56 aspect-square rounded-[2rem] flex flex-col items-center justify-center p-6 text-center cursor-pointer overflow-hidden">
+        <span aria-hidden="true" class="absolute -bottom-4 -right-2 font-hebrew text-8xl sm:text-9xl font-black text-black/10 leading-none pointer-events-none">ב</span>
+        <span class="relative z-10 text-xl sm:text-2xl font-black text-zinc-950 tracking-tight leading-tight">Letter<br>Runner</span>
+        
+      </a>
+      </div>
+    </section>
+    <section id="week2Games" aria-labelledby="week2Title" class="w-full max-w-5xl" hidden>
+      <h1 id="week2Title" tabindex="-1" class="menu-title text-3xl sm:text-4xl font-black text-zinc-950 text-center mb-3">Week 2</h1>
+      <p class="text-center text-sm font-bold text-zinc-600 mb-8">Zayin, Chet, Tet, Yod, Kaf, Chaf, Lamed</p>
+      <div class="menu-grid">
+      <a href="By%20Week/Week%202/week_2_letter_match.html" class="fun-square-btn btn-match w-48 h-48 sm:w-56 sm:h-56 aspect-square rounded-[2rem] flex flex-col items-center justify-center p-6 text-center cursor-pointer overflow-hidden">
+        <span aria-hidden="true" class="absolute -bottom-4 -right-2 font-hebrew text-8xl sm:text-9xl font-black text-black/10 leading-none pointer-events-none">א</span>
+        <span class="relative z-10 text-xl sm:text-2xl font-black text-zinc-950 tracking-tight leading-tight">Letter<br>Match</span>
+        
+      </a>
+      <a href="By%20Week/Week%202/week_2_letter_slicer.html" class="fun-square-btn btn-slicer w-48 h-48 sm:w-56 sm:h-56 aspect-square rounded-[2rem] flex flex-col items-center justify-center p-6 text-center cursor-pointer overflow-hidden">
+        <span aria-hidden="true" class="absolute -bottom-4 -right-2 font-hebrew text-8xl sm:text-9xl font-black text-black/10 leading-none pointer-events-none">ג</span>
+        <span class="relative z-10 text-xl sm:text-2xl font-black text-zinc-950 tracking-tight leading-tight">Letter<br>Slicer</span>
+        
+      </a>
+      </div>
+    </section>
+    <section id="week3Games" aria-labelledby="week3Title" class="w-full max-w-5xl" hidden>
+      <h1 id="week3Title" tabindex="-1" class="menu-title text-3xl sm:text-4xl font-black text-zinc-950 text-center mb-3">Week 3</h1>
+      <p class="text-center text-sm font-bold text-zinc-600 mb-8">Mem, Nun, Samech, Ayin, Pei, Fei, Tsadi</p>
+      <div class="menu-grid">
+      <a href="By%20Week/Week%203/week_3_letter_slicer.html" class="fun-square-btn btn-slicer w-48 h-48 sm:w-56 sm:h-56 aspect-square rounded-[2rem] flex flex-col items-center justify-center p-6 text-center cursor-pointer overflow-hidden">
+        <span aria-hidden="true" class="absolute -bottom-4 -right-2 font-hebrew text-8xl sm:text-9xl font-black text-black/10 leading-none pointer-events-none">ג</span>
+        <span class="relative z-10 text-xl sm:text-2xl font-black text-zinc-950 tracking-tight leading-tight">Letter<br>Slicer</span>
+        
+      </a>
+      <a href="By%20Week/Week%203/week_3_letter_match.html" class="fun-square-btn btn-match w-48 h-48 sm:w-56 sm:h-56 aspect-square rounded-[2rem] flex flex-col items-center justify-center p-6 text-center cursor-pointer overflow-hidden">
+        <span aria-hidden="true" class="absolute -bottom-4 -right-2 font-hebrew text-8xl sm:text-9xl font-black text-black/10 leading-none pointer-events-none">א</span>
+        <span class="relative z-10 text-xl sm:text-2xl font-black text-zinc-950 tracking-tight leading-tight">Letter<br>Match</span>
+        
+      </a>
+      </div>
+    </section>
+    <section id="week4Games" aria-labelledby="week4Title" class="w-full max-w-5xl" hidden>
+      <h1 id="week4Title" tabindex="-1" class="menu-title text-3xl sm:text-4xl font-black text-zinc-950 text-center mb-3">Week 4</h1>
+      <p class="text-center text-sm font-bold text-zinc-600 mb-8">Koof, Resh, Shin, Sin, Tav</p>
+      <div class="menu-grid">
+      <a href="By%20Week/Week%204/week_4_letter_runner.html" class="fun-square-btn btn-runner w-48 h-48 sm:w-56 sm:h-56 aspect-square rounded-[2rem] flex flex-col items-center justify-center p-6 text-center cursor-pointer overflow-hidden">
+        <span aria-hidden="true" class="absolute -bottom-4 -right-2 font-hebrew text-8xl sm:text-9xl font-black text-black/10 leading-none pointer-events-none">ב</span>
+        <span class="relative z-10 text-xl sm:text-2xl font-black text-zinc-950 tracking-tight leading-tight">Letter<br>Runner</span>
+        
+      </a>
+      <a href="By%20Week/Week%204/week_4_letter_slicer.html" class="fun-square-btn btn-slicer w-48 h-48 sm:w-56 sm:h-56 aspect-square rounded-[2rem] flex flex-col items-center justify-center p-6 text-center cursor-pointer overflow-hidden">
+        <span aria-hidden="true" class="absolute -bottom-4 -right-2 font-hebrew text-8xl sm:text-9xl font-black text-black/10 leading-none pointer-events-none">ג</span>
+        <span class="relative z-10 text-xl sm:text-2xl font-black text-zinc-950 tracking-tight leading-tight">Letter<br>Slicer</span>
+        
+      </a>
+      </div>
+    </section>
   </main>
 
   <div class="h-10 invisible"></div>
 
+  <script>
+    const panels = ['allGames', 'weekMenu', 'week1Games', 'week2Games', 'week3Games', 'week4Games'];
+    function showMenu(focusHeading = false) {
+      const weekMatch = /^#week-([1-4])$/.exec(window.location.hash);
+      const week = weekMatch ? weekMatch[1] : null;
+      const byWeek = window.location.hash === '#weeks';
+      const activePanel = week ? `week${week}Games` : byWeek ? 'weekMenu' : 'allGames';
+      panels.forEach(id => { document.getElementById(id).hidden = id !== activePanel; });
+      const back = document.getElementById('menuBack');
+      back.href = week ? '#weeks' : byWeek ? '#games' : 'index.html';
+      document.getElementById('menuBackLabel').textContent = week ? 'Back to Weeks' : byWeek ? 'Back to Games' : 'Back to Hub';
+      document.title = week ? `Week ${week} · Letter Games` : byWeek ? 'By Week · Letter Games' : 'Letter Games';
+      if (focusHeading) {
+        const heading = week ? document.getElementById(`week${week}Title`) : byWeek ? document.getElementById('weekMenuTitle') : null;
+        if (heading) heading.focus();
+        else back.focus();
+      }
+    }
+    window.addEventListener('hashchange', () => showMenu(true));
+    showMenu();
+  </script>
 </body>
 </html>
