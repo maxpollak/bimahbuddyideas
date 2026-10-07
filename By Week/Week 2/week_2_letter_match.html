@@ -52,88 +52,20 @@
       box-shadow: 1px 1px 0px #18181B;
     }
 
-    /* 3D Card Flip Mechanics */
-    .perspective-1000 {
-      perspective: 1000px;
-    }
-    .card-inner {
-      position: relative;
-      width: 100%;
-      height: 100%;
-      text-align: center;
-      transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-      transform-style: preserve-3d;
-    }
-    .card.is-flipped .card-inner {
-      transform: rotateY(180deg);
-    }
+/* Face-up matching cards: selection feedback without any flip or hidden face. */
+    .card-inner { position:relative; width:100%; height:100%; text-align:center; }
     .card-face {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      -webkit-backface-visibility: hidden;
-      backface-visibility: hidden;
-      border-radius: 1.25rem;
-      border: 3.5px solid #18181B;
-      box-shadow: 4px 4px 0px #18181B;
+      width:100%; height:100%; border-radius:1.25rem; border:3.5px solid #18181B;
+      box-shadow:4px 4px 0 #18181B; transition:background-color .16s ease, border-color .16s ease, transform .16s ease, box-shadow .16s ease;
     }
-    .card-front {
-      transform: rotateY(180deg);
-    }
+    .card-front { background:#fff; }
+    .card:not(.is-matched):hover { transform:translate(-2px,-2px); }
+    .card.is-selected .card-face { background:#FFF2BD; border-color:#B94723; box-shadow:4px 4px 0 #B94723; }
+    .card.is-wrong .card-face { background:#FFE0DD; border-color:#B42318; box-shadow:4px 4px 0 #B42318; }
+    .card.is-matched { pointer-events:none; }
+    .card.is-matched .card-face { background:#B9EED8; border-color:#087748; box-shadow:4px 4px 0 #087748; }
 
-    /* Card Back Neo-Brutalist Pattern */
-    .card-back {
-      background-color: #FFC72C;
-      background-image: 
-        radial-gradient(#18181B 1.5px, transparent 1.5px),
-        repeating-linear-gradient(45deg, rgba(24, 24, 27, 0.05) 0, rgba(24, 24, 27, 0.05) 10px, transparent 10px, transparent 20px);
-      background-size: 16px 16px, auto;
-    }
-
-    .card-back-mascot {
-      width: clamp(3rem, 6vw, 4.75rem);
-      height: 76%;
-      max-height: 6.25rem;
-      object-fit: contain;
-      transform: translateY(2px);
-      /* Drop shadows follow the mascot's transparent silhouette, not the PNG box. */
-      filter:
-        drop-shadow(1px 0 0 #18181B)
-        drop-shadow(-1px 0 0 #18181B)
-        drop-shadow(0 1px 0 #18181B)
-        drop-shadow(0 -1px 0 #18181B);
-    }
-
-    header, section, main, footer {
-      position: relative;
-      z-index: 1;
-    }
-
-    .card:not(.is-flipped):not(.is-matched):hover .card-inner {
-      transform: translate(-2px, -2px);
-    }
-
-    /* Popping match dissolve animation */
-    .card.is-matched {
-      animation: popDissolve 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-      pointer-events: none;
-    }
-    @keyframes popDissolve {
-      0% {
-        transform: scale(1);
-        opacity: 1;
-      }
-      50% {
-        transform: scale(1.1) rotate(4deg);
-        opacity: 0.9;
-      }
-      100% {
-        transform: scale(0.4) rotate(-8deg);
-        opacity: 0;
-        visibility: hidden;
-      }
-    }
+    header, section, main, footer { position:relative; z-index:1; }
   </style>
 </head>
 <body class="min-h-screen w-full flex flex-col justify-between p-4 sm:p-8 selection:bg-amber-400 selection:text-zinc-950">
@@ -277,7 +209,7 @@
     ];
 
     let cardDeck = [];
-    let flippedCards = [];
+    let selectedCards = [];
     let isLocked = false;
     let moves = 0;
     let matchedPairs = 0;
@@ -315,7 +247,7 @@
       } catch (e) {}
     }
 
-    function soundFlip() { playTone(480, 'sine', 0.08, 0.08); }
+    function soundSelect() { playTone(480, 'sine', 0.08, 0.08); }
     function soundMatch() {
       if (!audioEnabled) return;
       [523.25, 659.25, 783.99, 1046.50].forEach((note, idx) => {
@@ -340,7 +272,7 @@
       document.getElementById('soundIconOff').classList.toggle('hidden', audioEnabled);
       if (audioEnabled) {
         initAudioContext();
-        soundFlip();
+        soundSelect();
       }
     }
 
@@ -402,41 +334,28 @@
 
       cardDeck.forEach((card, index) => {
         const cardEl = document.createElement('div');
-        cardEl.className = 'card perspective-1000 w-full aspect-[3/4] cursor-pointer touch-manipulation select-none';
+        cardEl.className = 'card w-full aspect-[3/4] cursor-pointer touch-manipulation select-none transition-transform';
         cardEl.dataset.index = index;
         cardEl.dataset.matchKey = card.matchKey;
         cardEl.setAttribute('role', 'button');
         cardEl.setAttribute('tabindex', '0');
-        cardEl.setAttribute('aria-label', 'Face down card');
+        cardEl.setAttribute('aria-label', `${card.type === 'hebrew' ? 'Hebrew letter' : 'Name'}: ${card.display}`);
+        cardEl.setAttribute('aria-pressed', 'false');
 
         const isHebrew = card.type === 'hebrew';
 
         cardEl.innerHTML = `
           <div class="card-inner">
-            <div class="card-face card-back flex flex-col items-center justify-between p-2.5">
-              <div class="w-full flex justify-between text-[10px] text-zinc-950/40 font-black">
-                <span>✦</span><span>✦</span>
-              </div>
-              <img class="card-back-mascot" src="${document.querySelector('img[alt="The Be My Buddy lion celebrating"]').src}" alt="" aria-hidden="true">
-              <div class="w-full flex justify-between text-[10px] text-zinc-950/40 font-black">
-                <span>✦</span><span>✦</span>
-              </div>
-            </div>
-
-            <div class="card-face card-front bg-white flex flex-col justify-between p-2.5 sm:p-3 text-zinc-950">
+            <div class="card-face card-front flex flex-col justify-between p-2.5 sm:p-3 text-zinc-950">
               <div class="flex items-center justify-between w-full text-[9px] sm:text-[10px] font-black uppercase tracking-wider ${isHebrew ? 'text-[#B94723]' : 'text-sky-600'}">
                 <span class="truncate">${card.subtitle}</span>
                 <span class="text-zinc-400 font-mono">#${index + 1}</span>
               </div>
-
               <div class="flex-1 flex flex-col items-center justify-center">
-                ${
-                  isHebrew
-                    ? `<span class="font-hebrew text-5xl sm:text-6xl font-black text-zinc-950 leading-none">${card.display}</span>`
-                    : `<span class="font-black text-lg sm:text-xl md:text-2xl text-zinc-950 tracking-tight leading-tight">${card.display}</span>`
-                }
+                ${isHebrew
+                  ? `<span class="font-hebrew text-5xl sm:text-6xl font-black text-zinc-950 leading-none">${card.display}</span>`
+                  : `<span class="font-black text-lg sm:text-xl md:text-2xl text-zinc-950 tracking-tight leading-tight">${card.display}</span>`}
               </div>
-
               <div class="w-full text-center">
                 <span class="inline-block w-6 h-1.5 rounded-full ${isHebrew ? 'bg-[#FFC72C]' : 'bg-sky-400'}"></span>
               </div>
@@ -457,20 +376,19 @@
     }
 
     function onCardClicked(cardEl, cardData) {
-      if (isLocked) return;
-      if (cardEl.classList.contains('is-flipped')) return;
-      if (cardEl.classList.contains('is-matched')) return;
-
-      if (moves === 0 && flippedCards.length === 0 && secondsElapsed === 0) {
-        startTimer();
+      if (isLocked || cardEl.classList.contains('is-matched')) return;
+      if (cardEl.classList.contains('is-selected')) {
+        cardEl.classList.remove('is-selected');
+        cardEl.setAttribute('aria-pressed', 'false');
+        selectedCards = selectedCards.filter(card => card.element !== cardEl);
+        return;
       }
-
-      soundFlip();
-      cardEl.classList.add('is-flipped');
-      cardEl.setAttribute('aria-label', `Flipped: ${cardData.display}`);
-      flippedCards.push({ element: cardEl, data: cardData });
-
-      if (flippedCards.length === 2) {
+      if (moves === 0 && selectedCards.length === 0 && secondsElapsed === 0) startTimer();
+      soundSelect();
+      cardEl.classList.add('is-selected');
+      cardEl.setAttribute('aria-pressed', 'true');
+      selectedCards.push({ element: cardEl, data: cardData });
+      if (selectedCards.length === 2) {
         moves++;
         document.getElementById('movesCount').textContent = moves;
         checkMatch();
@@ -479,45 +397,40 @@
 
     function checkMatch() {
       isLocked = true;
-      const [first, second] = flippedCards;
-
+      const [first, second] = selectedCards;
       if (first.data.matchKey === second.data.matchKey) {
         soundMatch();
         matchedPairs++;
-        
-        const remaining = totalPairs - matchedPairs;
-        document.getElementById('remainingCount').textContent = remaining;
-
-        setTimeout(() => {
-          first.element.classList.add('is-matched');
-          second.element.classList.add('is-matched');
-          flippedCards = [];
-          isLocked = false;
-
-          if (matchedPairs === totalPairs) {
-            handleVictory();
-          }
-        }, 400);
-
+        document.getElementById('remainingCount').textContent = totalPairs - matchedPairs;
+        [first, second].forEach(card => {
+          card.element.classList.remove('is-selected');
+          card.element.classList.add('is-matched');
+          card.element.setAttribute('aria-pressed', 'false');
+          card.element.setAttribute('aria-disabled', 'true');
+          card.element.setAttribute('aria-label', `Matched: ${card.data.display}`);
+        });
+        selectedCards = [];
+        isLocked = false;
+        if (matchedPairs === totalPairs) handleVictory();
       } else {
-        setTimeout(() => soundMismatch(), 280);
-
+        soundMismatch();
+        [first, second].forEach(card => card.element.classList.add('is-wrong'));
         setTimeout(() => {
-          first.element.classList.remove('is-flipped');
-          second.element.classList.remove('is-flipped');
-          first.element.setAttribute('aria-label', 'Face down card');
-          second.element.setAttribute('aria-label', 'Face down card');
-          flippedCards = [];
+          [first, second].forEach(card => {
+            card.element.classList.remove('is-selected', 'is-wrong');
+            card.element.setAttribute('aria-pressed', 'false');
+          });
+          selectedCards = [];
           isLocked = false;
-        }, 1050);
+        }, 650);
       }
     }
 
-    function initGame() {
+        function initGame() {
       stopTimer();
       moves = 0;
       matchedPairs = 0;
-      flippedCards = [];
+      selectedCards = [];
       isLocked = false;
       secondsElapsed = 0;
 
